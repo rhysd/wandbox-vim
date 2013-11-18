@@ -35,7 +35,7 @@ function! s:format_result(content)
          \, s:is_blank(a:content, 'program_message') ? '' : printf("[output]\n%s", a:content.program_message))
 endfunction
 
-function! wandbox#run_a_dog(...)
+function! wandbox#compile(...)
     let parsed = s:parse_args(a:000)
     let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\', '\\', 'g')
     let compiler = has_key(parsed, 'compiler') ? parsed.compiler : 'gcc-head'
