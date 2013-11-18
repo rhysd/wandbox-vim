@@ -37,6 +37,11 @@ Execute the buffer with clang.
 :WandBox --compiler=clang-head
 ```
 
+When you want to know about options,
+
+```
+:WandBoxOptionList
+```
 
 ## Installation
 

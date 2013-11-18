@@ -61,5 +61,21 @@ function! wandbox#compile_and_dump(...)
     endfor
 endfunction
 
+function! wandbox#list()
+    let response = s:HTTP.get('http://melpon.org/wandbox/api/list.json')
+    if ! response.success
+        throw "Request has failed! Status is ".response.status.'.'
+    endif
+    return exists('*PrettyPrint') ?
+                \ PrettyPrint(s:JSON.decode(response.content))
+                \ : substitute(response.content, ',', ",\n", 'g')
+endfunction
+
+function! wandbox#dump_option_list()
+    for l in split(wandbox#list(), "\n")
+        echomsg l
+    endfor
+endfunction
+
 let &cpo = s:save_cpo
 unlet s:save_cpo
