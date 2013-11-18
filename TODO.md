@@ -1,2 +1,3 @@
-- [vim-quickrun]() type or runner
+- [vim-quickrun](https://github.com/thinca/vim-quickrun) type or runner
+- Execute asynchronously with Vital.ProcessManager
 - Better command interface
