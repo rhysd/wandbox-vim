@@ -51,9 +51,8 @@ function! wandbox#compile(...)
     return s:format_result(content)
 endfunction
 
-function! wandbox#dump(lines)
-    let bufnr = bufnr('%')
-    for l in a:lines
+function! wandbox#compile_and_dump(...)
+    for l in split(call('wandbox#compile', a:000), "\n")
         if l ==# '[compiler]' || l ==# '[output]'
             echohl MoreMsg
         endif
