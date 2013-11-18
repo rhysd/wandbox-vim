@@ -5,10 +5,10 @@ This is a Vim plugin to use [Wandbox](http://melpon.org/wandbox/) in Vim.
 
 ## What is Wandbox?
 
-[Wandbox](http://melpon.org/wandbox/) is a new and cool social compilation service, mainly for C++ers.
+[Wandbox](http://melpon.org/wandbox/) is a new and cool social compilation service mainly for C++ers.
 You can use various versions of compilers and famous libraries.
 In addition, Wandbox provides some other languages like Ruby, Python, Haskell, D and so on.
-Wandbox is created by @melpon and @kikairoya. Repository page is [here](https://github.com/melpon/wandbox).
+Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](https://github.com/melpon/wandbox).
 
 ## Usage
 
@@ -47,8 +47,18 @@ When you want to know about options,
 
 Use modern plugin manager like [neobundle.vim](https://github.com/Shougo/neobundle.vim) or [vundle](https://github.com/gmarik/vundle).
 
-Though it is NOT recommended, you can install manually by copying the files in this repository into your Vim script directory which is usually `~/.vim/`, or `$HOME/vimfiles` on Windows.
+Though it is _NOT_ recommended, you can install manually by copying the files in this repository into your Vim script directory which is usually `~/.vim/`, or `$HOME/vimfiles` on Windows.
 
+```sh
+git clone https://github.com/rhysd/wandbox-vim.git
+cd wandbox-vim
+cp -R autoload/* ~/.vim/autoload/
+cp -R plugin/* ~/.vim/plugin/
+```
+
+## Customization
+
+Comming soon.
 
 ## License
 
