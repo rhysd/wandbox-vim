@@ -1,3 +1,4 @@
+scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
@@ -14,7 +15,12 @@ function! s:parse_args(args)
     " TODO: parse returned value
     let parsed = call(s:option_parser.parse, a:args, s:option_parser)
     if parsed.__unknown_args__ != []
-        throw 'Unknown arguments: '.join(parsed.__unknown_args__, ', ')
+        if parsed.__unknown_args__[0] == '--puff-puff'
+            echo '三へ( へ՞ਊ ՞)へ ﾊｯﾊｯ'
+            return {}
+        else
+            throw 'Unknown arguments: '.join(parsed.__unknown_args__, ', ')
+        endif
     endif
     if has_key(parsed, 'help')
         return {}
@@ -37,6 +43,7 @@ endfunction
 
 function! wandbox#compile(...)
     let parsed = s:parse_args(a:000)
+    if parsed == {} | return '' | endif
     let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\', '\\', 'g')
     let compiler = has_key(parsed, 'compiler') ? parsed.compiler : 'gcc-head'
     let options = has_key(parsed, 'options') ? parsed.options : 'warning,gnu++1y,boost-1.55'
