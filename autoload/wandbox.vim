@@ -73,9 +73,7 @@ function! wandbox#list()
     if ! response.success
         throw "Request has failed! Status is ".response.status.'.'
     endif
-    return exists('*PrettyPrint') ?
-                \ PrettyPrint(s:JSON.decode(response.content))
-                \ : substitute(response.content, ',', ",\n", 'g')
+    return wandbox#prettyprint#pp(s:JSON.decode(response.content))
 endfunction
 
 function! wandbox#dump_option_list()
