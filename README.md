@@ -18,7 +18,7 @@ Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](h
 
 If `[range]` is omitted, whole buffer would be selected.
 
-`[--compiler={compiler}]` specifies a compiler like `gcc-head`, `clang-head`, `gcc-4.8`, `clang-3.3`... Default value is `gcc-head`.
+`[--compiler={compiler}]` specifies a compiler like `gcc-head`, `clang-head`, `gcc-4.8.2`, `clang-3.3`... Default value is `gcc-head`.
 
 `[--options={options}]` specifies options for compilation like `warning`, `c++1y`, `boost-1.55`... This value must be comma-separated and no space is allowed like `warning,c++1y,boost-1.55`. Default value is `warning,gnu++1y,boost-1.55`.
 
@@ -47,6 +47,12 @@ If you want to search incrementally, [unite.vim](https://github.com/Shougo/unite
 
 ```
 :Unite output:WandBoxOptionList
+```
+
+Below is an example for heavy use.
+
+```
+:WandBox --compiler=clang-3.3 --options=boost-1.55,c++1y,warning,optimize,sprout
 ```
 
 ## Installation
@@ -88,6 +94,7 @@ augroup END
 - [ ] unite interface for compiler options
 - [ ] unite interface for compilers
 - [ ] persistent caching for options which would be used in quickrun type generation and unite interface
+- [ ] make default options and a compiler customizable
 
 
 ## Libraries wandbox-vim Using
