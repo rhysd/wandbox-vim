@@ -52,7 +52,7 @@ function! wandbox#compile(...)
                              \ json,
                              \ {'Content-type' : 'application/json'})
     if ! response.success
-        throw "Request has failed! Status is ".response.status.'.'
+        throw "Request has failed! Status " . response.status . ': ' . response.statusText
     endif
     let content = s:JSON.decode(response.content)
     return s:format_result(content)
@@ -71,7 +71,7 @@ endfunction
 function! wandbox#list()
     let response = s:HTTP.get('http://melpon.org/wandbox/api/list.json')
     if ! response.success
-        throw "Request has failed! Status is " . response.status . '.'
+        throw "Request has failed! Status " . response.status . ': ' . response.statusText
     endif
     return wandbox#prettyprint#pp(s:JSON.decode(response.content))
 endfunction
