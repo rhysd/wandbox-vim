@@ -1,5 +1,0 @@
-- [vim-quickrun](https://github.com/thinca/vim-quickrun) type
-- Execute asynchronously with Vital.ProcessManager
-- Better command interface
-- unite interface for compiler options
-- unite interface for compilers

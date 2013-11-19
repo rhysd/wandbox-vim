@@ -64,16 +64,40 @@ cp -R plugin/* ~/.vim/plugin/
 
 ## Customization
 
+- _Variables_
+
 Comming soon.
+
+- _Mappings_
+
+If you want to execute :WandBox quickly, you can add mappings to `:WandBox` like below.
+
+```vim
+augoup wandbox-settings
+    autocmd!
+    autocmd FileType cpp noremap <buffer><Leader>wg :WandBox --compiler=gcc-head<CR>
+    autocmd FileType cpp noremap <buffer><Leader>wc :WandBox --compiler=clang-head<CR>
+augroup END
+```
+
+## TODO
+
+- [ ] [vim-quickrun](https://github.com/thinca/vim-quickrun) type like wandbox/gcc-head, wandbox/clang-head...
+- [ ] Execute asynchronously with Vital.ProcessManager
+- [ ] Better command interface
+- [ ] unite interface for compiler options
+- [ ] unite interface for compilers
+- [ ] persistent caching for options which would be used in quickrun type generation and unite interface
+
 
 ## Libraries wandbox-vim Using
 
-wandbox-vim is standing on the shoulders of bellow.
+wandbox-vim is standing on the shoulders of below libraries.
 
 - Vital.Web.HTTP
 - Vital.Web.JSON
 - Vital.OptionParser
-- [vim-prettyprint](https://github.com/thinca/vim-prettyprint)
+- vim-prettyprint
 
 ## License
 
