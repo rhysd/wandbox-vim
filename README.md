@@ -66,6 +66,15 @@ cp -R plugin/* ~/.vim/plugin/
 
 Comming soon.
 
+## Libraries wandbox-vim Using
+
+wandbox-vim is standing on the shoulders of bellow.
+
+- Vital.Web.HTTP
+- Vital.Web.JSON
+- Vital.OptionParser
+- [vim-prettyprint](https://github.com/thinca/vim-prettyprint)
+
 ## License
 
 Copyright (c) 2013 rhysd
