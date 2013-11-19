@@ -13,7 +13,7 @@ Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](h
 ## Usage
 
 ```
-[range]Wandbox [--compiler={compiler}] [--options={options}]
+:[range]Wandbox [--compiler={compiler}] [--options={options}]
 ```
 
 If `[range]` is omitted, whole buffer would be selected.
@@ -70,16 +70,16 @@ cp -R plugin/* ~/.vim/plugin/
 
 ## Customization
 
-- _Variables_
+### Variables
 
 Comming soon.
 
-- _Mappings_
+### Mappings
 
 If you want to execute `:Wandbox` quickly, you can add mappings to `:Wandbox` like below.
 
 ```vim
-augoup wandbox-settings
+augroup wandbox-settings
     autocmd!
     autocmd FileType cpp noremap <buffer><Leader>wg :Wandbox --compiler=gcc-head<CR>
     autocmd FileType cpp noremap <buffer><Leader>wc :Wandbox --compiler=clang-head<CR>
@@ -88,13 +88,13 @@ augroup END
 
 ## TODO
 
-- [ ] [vim-quickrun](https://github.com/thinca/vim-quickrun) type like wandbox/gcc-head, wandbox/clang-head...
-- [ ] Execute asynchronously with Vital.ProcessManager
-- [ ] Better command interface
-- [ ] unite interface for compiler options
-- [ ] unite interface for compilers
-- [ ] persistent caching for options which would be used in quickrun type generation and unite interface
-- [ ] make default options and a compiler customizable
+- Types of [vim-quickrun](https://github.com/thinca/vim-quickrun) like wandbox/gcc-head, wandbox/clang-head...
+- Execute asynchronously with Vital.ProcessManager
+- Better command interface
+- Unite interface for compiler options
+- Unite interface for compilers
+- Persistent caching for options which would be used in quickrun type generation and unite interface
+- Make default options and a compiler customizable
 
 
 ## Libraries wandbox-vim Using
