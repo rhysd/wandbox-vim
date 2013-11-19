@@ -44,7 +44,7 @@ endfunction
 function! wandbox#compile(...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return '' | endif
-    let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\', '\\', 'g')
+    let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\\', '\\\\', 'g')
     let compiler = has_key(parsed, 'compiler') ? parsed.compiler : 'gcc-head'
     let options = has_key(parsed, 'options') ? parsed.options : 'warning,gnu++1y,boost-1.55'
     let json = s:JSON.encode({'code':buf, 'options':options, 'compiler':compiler})
@@ -71,7 +71,7 @@ endfunction
 function! wandbox#list()
     let response = s:HTTP.get('http://melpon.org/wandbox/api/list.json')
     if ! response.success
-        throw "Request has failed! Status is ".response.status.'.'
+        throw "Request has failed! Status is " . response.status . '.'
     endif
     return wandbox#prettyprint#pp(s:JSON.decode(response.content))
 endfunction
