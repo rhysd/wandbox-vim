@@ -43,6 +43,12 @@ When you want to know about options,
 :WandBoxOptionList
 ```
 
+If you want to search incrementally, [unite.vim](https://github.com/Shougo/unite.vim) is a good choice.
+
+```
+:Unite output:WandBoxOptionList
+```
+
 ## Installation
 
 Use modern plugin manager like [neobundle.vim](https://github.com/Shougo/neobundle.vim) or [vundle](https://github.com/gmarik/vundle).
