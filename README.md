@@ -13,7 +13,7 @@ Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](h
 ## Usage
 
 ```
-[range]WandBox [--compiler={compiler}] [--options={options}]
+[range]Wandbox [--compiler={compiler}] [--options={options}]
 ```
 
 If `[range]` is omitted, whole buffer would be selected.
@@ -28,31 +28,31 @@ If `[range]` is omitted, whole buffer would be selected.
 Execute the buffer with default compiler and options.
 
 ```
-:WandBox
+:Wandbox
 ```
 
 Execute the buffer with clang.
 
 ```
-:WandBox --compiler=clang-head
+:Wandbox --compiler=clang-head
 ```
 
 When you want to know about options,
 
 ```
-:WandBoxOptionList
+:WandboxOptionList
 ```
 
 If you want to search incrementally, [unite.vim](https://github.com/Shougo/unite.vim) is a good choice.
 
 ```
-:Unite output:WandBoxOptionList
+:Unite output:WandboxOptionList
 ```
 
 Below is an example for heavy use.
 
 ```
-:WandBox --compiler=clang-3.3 --options=boost-1.55,c++1y,warning,optimize,sprout
+:Wandbox --compiler=clang-3.3 --options=boost-1.55,c++1y,warning,optimize,sprout
 ```
 
 ## Installation
@@ -76,13 +76,13 @@ Comming soon.
 
 - _Mappings_
 
-If you want to execute :WandBox quickly, you can add mappings to `:WandBox` like below.
+If you want to execute `:Wandbox` quickly, you can add mappings to `:Wandbox` like below.
 
 ```vim
 augoup wandbox-settings
     autocmd!
-    autocmd FileType cpp noremap <buffer><Leader>wg :WandBox --compiler=gcc-head<CR>
-    autocmd FileType cpp noremap <buffer><Leader>wc :WandBox --compiler=clang-head<CR>
+    autocmd FileType cpp noremap <buffer><Leader>wg :Wandbox --compiler=gcc-head<CR>
+    autocmd FileType cpp noremap <buffer><Leader>wc :Wandbox --compiler=clang-head<CR>
 augroup END
 ```
 
