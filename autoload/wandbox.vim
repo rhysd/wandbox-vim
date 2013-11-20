@@ -2,6 +2,30 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:default_compiler = {
+            \ '-' : 'gcc-head',
+            \ 'cpp' : 'gcc-head',
+            \ 'c' : 'gcc-4.8.2-c',
+            \ 'cs' : 'mcs-3.2.0',
+            \ 'php' : 'php-5.5.6',
+            \ 'lua' : 'lua-5.2.2',
+            \ 'sql' : 'sqlite-3.8.1',
+            \ 'sh' : 'bash',
+            \ 'erlang' : 'erlang-maint',
+            \ 'ruby' : 'ruby-2.0.0-p247',
+            \ 'python' : 'python-2.7.3',
+            \ 'python3' : 'python-3.3.2',
+            \ 'perl' : 'perl-5.19.2',
+            \ 'haskell' : 'ghc-7.6.3',
+            \ 'd' : 'gdc-head',
+            \ }
+
+if exists('wandbox#default_compiler')
+    for [name, compiler] in items(wandbox#default_compiler)
+        let s:default_compiler[name] = compiler
+    endfor
+endif
+
 let s:V = vital#of('wandbox-vim')
 let s:OptionParser = s:V.import('OptionParser')
 let s:HTTP = s:V.import('Web.HTTP')
@@ -45,7 +69,7 @@ function! wandbox#compile(...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return '' | endif
     let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\\', '\\\\', 'g')
-    let compiler = has_key(parsed, 'compiler') ? parsed.compiler : 'gcc-head'
+    let compiler = get(parsed, 'compiler', get(s:default_compiler, &filetype, s:default_compiler._))
     let options = has_key(parsed, 'options') ? parsed.options : 'warning,gnu++1y,boost-1.55'
     let json = s:JSON.encode({'code':buf, 'options':options, 'compiler':compiler})
     let response = s:HTTP.post('http://melpon.org/wandbox/api/compile.json',
