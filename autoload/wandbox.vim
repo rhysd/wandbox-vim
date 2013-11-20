@@ -79,13 +79,27 @@ function! s:format_result(content)
          \, s:is_blank(a:content, 'program_message') ? '' : printf("[output]\n%s", a:content.program_message))
 endfunction
 
-function! wandbox#compile(...)
+function! s:dump_result(result)
+    for l in split(a:result, "\n")
+        if l ==# '[compiler]' || l ==# '[output]'
+            echohl MoreMsg
+        endif
+        echomsg l
+        echohl None
+    endfor
+endfunction
+
+function! wandbox#run_a_dog(...)
     let parsed = s:parse_args(a:000)
-    if parsed == {} | return '' | endif
+    if parsed == {} | return | endif
     let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\\', '\\\\', 'g')
     let compiler = get(parsed, 'compiler', get(s:default_compiler, &filetype, s:default_compiler['-']))
     let options = get(parsed, 'options', get(s:default_options, &filetype, s:default_options['-']))
-    let json = s:JSON.encode({'code':buf, 'options':options, 'compiler':compiler})
+    call s:dump_result(wandbox#compile(buf, compiler, options))
+endfunction
+
+function! wandbox#compile(code, compiler, options)
+    let json = s:JSON.encode({'code' : a:code, 'options' : a:options, 'compiler' : a:compiler})
     let response = s:HTTP.post('http://melpon.org/wandbox/api/compile.json',
                              \ json,
                              \ {'Content-type' : 'application/json'})
@@ -94,16 +108,6 @@ function! wandbox#compile(...)
     endif
     let content = s:JSON.decode(response.content)
     return s:format_result(content)
-endfunction
-
-function! wandbox#compile_and_dump(...)
-    for l in split(call('wandbox#compile', a:000), "\n")
-        if l ==# '[compiler]' || l ==# '[output]'
-            echohl MoreMsg
-        endif
-        echomsg l
-        echohl None
-    endfor
 endfunction
 
 function! wandbox#list()
