@@ -2,6 +2,8 @@ Wandbox for vimmers
 ===================
 
 This is a Vim plugin to use [Wandbox](http://melpon.org/wandbox/) in Vim.
+You can execute the current buffer with Wandbox and display the result in Vim.
+Now, Wandbox can execute C, C++, C#, D, Ruby, Python, Python3, PHP, Lua, Perl, Haskell, Erlang, Bash and SQL codes.
 
 ## What is Wandbox?
 
@@ -18,9 +20,9 @@ Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](h
 
 If `[range]` is omitted, whole buffer would be selected.
 
-`[--compiler={compiler}]` specifies a compiler like `gcc-head`, `clang-head`, `gcc-4.8.2`, `clang-3.3`... Default value is `gcc-head`.
+`[--compiler={compiler}]` specifies a compiler like `gcc-head`, `clang-head`, `gcc-4.8.2`, `clang-3.3`... Default value is `gcc-head` for C++. See `autoload/wandbox.vim` to know default values of each filetype.
 
-`[--options={options}]` specifies options for compilation like `warning`, `c++1y`, `boost-1.55`... This value must be comma-separated and no space is allowed like `warning,c++1y,boost-1.55`. Default value is `warning,gnu++1y,boost-1.55`.
+`[--options={options}]` specifies options for compilation like `warning`, `c++1y`, `boost-1.55`... This value must be comma-separated and no space is allowed like `warning,c++1y,boost-1.55`. Default value is `warning,gnu++1y,boost-1.55` for C++, 'haskell-warning' for Haskell, '' for others.
 
 
 ## Example
@@ -111,7 +113,7 @@ augroup END
 - Unite interface for compiler options
 - Unite interface for compilers
 - Persistent caching for options which would be used in quickrun type generation and unite interface
-- Make default options and a compiler customizable
+- `doc/wandbox.txt`
 
 
 ## Libraries wandbox-vim Using
