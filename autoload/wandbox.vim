@@ -2,6 +2,12 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:V = vital#of('wandbox-vim')
+let s:OptionParser = s:V.import('OptionParser')
+let s:HTTP = s:V.import('Web.HTTP')
+let s:JSON = s:V.import('Web.JSON')
+let s:List = s:V.import('Data.List')
+
 let s:default_compiler = {
             \ '-' : 'gcc-head',
             \ 'cpp' : 'gcc-head',
@@ -35,15 +41,10 @@ let s:default_options = {
 
 if exists('wandbox#default_options')
     for [name, options] in items(wandbox#default_options)
-        let s:default_options[name] = type(options) == type("") ? options : join(options, ',')
+        let s:default_options[name] = type(options) == type("")? options : join(options, ',')
         unlet options
     endfor
 endif
-
-let s:V = vital#of('wandbox-vim')
-let s:OptionParser = s:V.import('OptionParser')
-let s:HTTP = s:V.import('Web.HTTP')
-let s:JSON = s:V.import('Web.JSON')
 
 let s:option_parser = s:OptionParser.new()
                                    \.on('--compiler=VAL', '-c', 'Compiler command (like g++, clang, ...)')
@@ -79,13 +80,14 @@ function! s:format_result(content)
          \, s:is_blank(a:content, 'program_message') ? '' : printf("[output]\n%s", a:content.program_message))
 endfunction
 
-function! s:dump_result(result)
+function! s:dump_result(compiler, result)
+    echohl Constant | echomsg '[['.a:compiler.']]' | echohl None
     for l in split(a:result, "\n")
         if l ==# '[compiler]' || l ==# '[output]'
-            echohl MoreMsg
+            echohl MoreMsg | echomsg l | echohl None
+        else
+            echomsg l
         endif
-        echomsg l
-        echohl None
     endfor
 endfunction
 
@@ -93,9 +95,15 @@ function! wandbox#run(...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
     let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\\', '\\\\', 'g')
-    let compiler = get(parsed, 'compiler', get(s:default_compiler, &filetype, s:default_compiler['-']))
-    let options = get(parsed, 'options', get(s:default_options, &filetype, s:default_options['-']))
-    call s:dump_result(wandbox#compile(buf, compiler, options))
+    let compilers = split(get(parsed, 'compiler', get(s:default_compiler, &filetype, s:default_compiler['-'])), ',')
+    let options = split(get(parsed, 'options', get(s:default_options, &filetype, s:default_options['-'])), ':')
+    if len(options) <= 1
+        let options = repeat([options == [] ? '' : options[0]], len(compilers))
+    endif
+    let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(buf, v:val[0], v:val[1])]')
+    for [compiler, output] in results
+        call s:dump_result(compiler, output)
+    endfor
 endfunction
 
 function! wandbox#compile(code, compiler, options)
