@@ -2,8 +2,10 @@ Wandbox for vimmers
 ===================
 
 This is a Vim plugin to use [Wandbox](http://melpon.org/wandbox/) in Vim.
-You can execute the current buffer with Wandbox and display the result in Vim.
+You can compile and execute the current buffer with one or more compilers and display the results in Vim.
 Now, Wandbox can execute C, C++, C#, D, Ruby, Python, Python3, PHP, Lua, Perl, Haskell, Erlang, Bash and SQL codes.
+
+![screenshot](https://dl.dropboxusercontent.com/u/2753138/wandbox.png)
 
 ## What is Wandbox?
 
@@ -20,10 +22,9 @@ Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](h
 
 If `[range]` is omitted, whole buffer would be selected.
 
-`[--compiler={compiler}]` specifies a compiler like `gcc-head`, `clang-head`, `gcc-4.8.2`, `clang-3.3`... Default value is `gcc-head` for C++. See `autoload/wandbox.vim` to know default values of each filetype.
+`[--compiler={compiler}]` specifies a compiler like `gcc-head`, `clang-head`, `gcc-4.8.2`, `clang-3.3`... Default value is `gcc-head` for C++. See `autoload/wandbox.vim` to know default values of each filetype.  You can set multipul compilers with comma-separated string like `'gcc-head,clang-head'`.
 
-`[--options={options}]` specifies options for compilation like `warning`, `c++1y`, `boost-1.55`... This value must be comma-separated and no space is allowed like `warning,c++1y,boost-1.55`. Default value is `warning,gnu++1y,boost-1.55` for C++, 'haskell-warning' for Haskell, '' for others.
-
+`[--options={options}]` specifies options for compilation like `warning`, `c++1y`, `boost-1.55`... This value must be comma-separated and no space is allowed like `warning,c++1y,boost-1.55`. Default value is `warning,gnu++1y,boost-1.55` for C++, 'haskell-warning' for Haskell, '' for others.  If multipul compilers are set, you can set each options for the compilers with colon-separated string like `'warning,c++11:warning,c++0x'`.  When you set single options like `'warning,c++11'` even if multipul compilers are set, all compilers uses the same option you set.
 
 ## Example
 
@@ -33,10 +34,10 @@ Execute the buffer with default compiler and options.
 :Wandbox
 ```
 
-Execute the buffer with clang.
+Execute the buffer with clang and gcc at the same time.
 
 ```
-:Wandbox --compiler=clang-head
+:Wandbox --compiler=clang-head,gcc-head
 ```
 
 When you want to know about options,
