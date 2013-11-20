@@ -89,7 +89,7 @@ function! s:dump_result(result)
     endfor
 endfunction
 
-function! wandbox#run_a_dog(...)
+function! wandbox#run(...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
     let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\\', '\\\\', 'g')
@@ -118,7 +118,7 @@ function! wandbox#list()
     return wandbox#prettyprint#pp(s:JSON.decode(response.content))
 endfunction
 
-function! wandbox#dump_option_list()
+function! wandbox#bark()
     for l in split(wandbox#list(), "\n")
         echomsg l
     endfor
