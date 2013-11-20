@@ -98,6 +98,7 @@ let wandbox#default_options = {
 If you want to execute `:Wandbox` quickly, you can add mappings to `:Wandbox` like below.
 
 ```vim
+noremap <Leader>wb :Wandbox<CR>
 augroup wandbox-settings
     autocmd!
     autocmd FileType cpp noremap <buffer><Leader>wg :Wandbox --compiler=gcc-head<CR>
