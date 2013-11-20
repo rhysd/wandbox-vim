@@ -26,6 +26,20 @@ if exists('wandbox#default_compiler')
     endfor
 endif
 
+let s:default_options = {
+            \ '-' : '',
+            \ 'cpp' : 'warning,gnu++1y,boost-1.55',
+            \ 'c' : 'warning,c11',
+            \ 'haskell' : 'haskell-warning',
+            \ }
+
+if exists('wandbox#default_options')
+    for [name, options] in items(wandbox#default_options)
+        let s:default_options[name] = type(options) == type("") ? options : join(options, ',')
+        unlet options
+    endfor
+endif
+
 let s:V = vital#of('wandbox-vim')
 let s:OptionParser = s:V.import('OptionParser')
 let s:HTTP = s:V.import('Web.HTTP')
@@ -69,8 +83,8 @@ function! wandbox#compile(...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return '' | endif
     let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\\', '\\\\', 'g')
-    let compiler = get(parsed, 'compiler', get(s:default_compiler, &filetype, s:default_compiler._))
-    let options = has_key(parsed, 'options') ? parsed.options : 'warning,gnu++1y,boost-1.55'
+    let compiler = get(parsed, 'compiler', get(s:default_compiler, &filetype, s:default_compiler['-']))
+    let options = get(parsed, 'options', get(s:default_options, &filetype, s:default_options['-']))
     let json = s:JSON.encode({'code':buf, 'options':options, 'compiler':compiler})
     let response = s:HTTP.post('http://melpon.org/wandbox/api/compile.json',
                              \ json,
