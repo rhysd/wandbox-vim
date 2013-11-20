@@ -41,10 +41,12 @@ let s:default_options = {
 
 if exists('wandbox#default_options')
     for [name, options] in items(wandbox#default_options)
-        let s:default_options[name] = type(options) == type("")? options : join(options, ',')
+        let s:default_options[name] = type(options) == type("") ? options : join(options, ',')
         unlet options
     endfor
 endif
+
+let s:result_indent = repeat(' ', get(g:, 'wandbox#result_indent', 2))
 
 let s:option_parser = s:OptionParser.new()
                                    \.on('--compiler=VAL', '-c', 'Compiler command (like g++, clang, ...)')
@@ -84,9 +86,9 @@ function! s:dump_result(compiler, result)
     echohl Constant | echomsg '[['.a:compiler.']]' | echohl None
     for l in split(a:result, "\n")
         if l ==# '[compiler]' || l ==# '[output]'
-            echohl MoreMsg | echomsg l | echohl None
+            echohl MoreMsg | echomsg s:result_indent.(l=='' ? ' ' : l) | echohl None
         else
-            echomsg l
+            echomsg  s:result_indent.(l=='' ? ' ' : l)
         endif
     endfor
 endfunction
@@ -104,6 +106,7 @@ function! wandbox#run(...)
     for [compiler, output] in results
         call s:dump_result(compiler, output)
     endfor
+    echomsg ' '
 endfunction
 
 function! wandbox#compile(code, compiler, options)
