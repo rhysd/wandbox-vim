@@ -117,6 +117,22 @@ function! wandbox#prettyprint#pp(...)
   return join(result, "\n")
 endfunction
 
+" options. {{{1
+if !exists('g:prettyprint_indent')  " {{{2
+  let g:prettyprint_indent = '&l:shiftwidth'
+endif
+
+if !exists('g:prettyprint_width')  " {{{2
+  let g:prettyprint_width = '&columns'
+endif
+
+if !exists('g:prettyprint_string')  " {{{2
+  let g:prettyprint_string = []
+endif
+
+if !exists('g:prettyprint_show_expression')  " {{{2
+  let g:prettyprint_show_expression = 0
+endif
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
