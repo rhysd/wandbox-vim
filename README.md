@@ -118,6 +118,7 @@ augroup END
 - Unite interface for compilers
 - Persistent caching for options which would be used in quickrun type generation and unite interface
 - `doc/wandbox.txt`
+- Automatically expand `#include ""`
 
 
 ## Libraries wandbox-vim Using
