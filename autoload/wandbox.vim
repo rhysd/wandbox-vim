@@ -49,8 +49,9 @@ endif
 let s:result_indent = repeat(' ', get(g:, 'wandbox#result_indent', 2))
 
 let s:option_parser = s:OptionParser.new()
-                                   \.on('--compiler=VAL', '-c', 'Compiler command (like g++, clang, ...)')
+                                   \.on('--compiler=VAL', '-c', 'Comma separated compiler commands (like "gcc-head,clang-head")')
                                    \.on('--options=VAL', '-o', 'Comma separated options (like "warning,gnu++1y"')
+                                   \.on('--file=VAL', '-f', 'File name to execute')
 
 function! s:parse_args(args)
     " TODO: parse returned value
@@ -82,6 +83,18 @@ function! s:format_result(content)
          \, s:is_blank(a:content, 'program_message') ? '' : printf("[output]\n%s", a:content.program_message))
 endfunction
 
+function! s:get_code(range, ...)
+    if a:0 > 0
+        " XXX
+        let buf = join(a:range[0] == 1 && a:range[1] == line('$') ?
+                        \ readfile(a:1) :
+                        \ readfile(a:1)[a:range[0]-1:a:range[1]-1], "\n")
+    else
+        let buf = join(getline(a:range[0], a:range[1]), "\n")."\n"
+    endif
+    return substitute(buf, '\\', '\\\\', 'g')
+endfunction
+
 function! s:dump_result(compiler, result)
     echohl Constant | echomsg '[['.a:compiler.']]' | echohl None
     for l in split(a:result, "\n")
@@ -96,13 +109,15 @@ endfunction
 function! wandbox#run(...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let buf = substitute(join(getline(parsed.__range__[0], parsed.__range__[1]), "\n")."\n", '\\', '\\\\', 'g')
+    let code = has_key(parsed, 'file') ?
+                \ s:get_code(parsed.__range__, parsed.file) :
+                \ s:get_code(parsed.__range__)
     let compilers = split(get(parsed, 'compiler', get(s:default_compiler, &filetype, s:default_compiler['-'])), ',')
     let options = split(get(parsed, 'options', get(s:default_options, &filetype, s:default_options['-'])), ':')
     if len(options) <= 1
         let options = repeat([options == [] ? '' : options[0]], len(compilers))
     endif
-    let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(buf, v:val[0], v:val[1])]')
+    let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1])]')
     for [compiler, output] in results
         call s:dump_result(compiler, output)
     endfor
