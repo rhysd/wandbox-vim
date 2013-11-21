@@ -8,7 +8,8 @@ let s:HTTP = s:V.import('Web.HTTP')
 let s:JSON = s:V.import('Web.JSON')
 let s:List = s:V.import('Data.List')
 
-let s:default_compiler = {
+let g:wandbox#default_compiler = get(g:, 'wandbox#default_compiler', {})
+call extend(g:wandbox#default_compiler, {
             \ '-' : 'gcc-head',
             \ 'cpp' : 'gcc-head',
             \ 'c' : 'gcc-4.8.2-c',
@@ -24,27 +25,20 @@ let s:default_compiler = {
             \ 'perl' : 'perl-5.19.2',
             \ 'haskell' : 'ghc-7.6.3',
             \ 'd' : 'gdc-head',
-            \ }
+            \ }, 'keep')
 
-if exists('wandbox#default_compiler')
-    for [name, compiler] in items(wandbox#default_compiler)
-        let s:default_compiler[name] = compiler
-    endfor
+if exists('g:wandbox#default_options')
+    call map(g:wandbox#default_options, 'type(v:val) == type("") ? v:val : join(v:val, ",")')
+else
+    let g:wandbox#default_options = {}
 endif
 
-let s:default_options = {
+call extend(g:wandbox#default_options, {
             \ '-' : '',
             \ 'cpp' : 'warning,gnu++1y,boost-1.55',
             \ 'c' : 'warning,c11',
             \ 'haskell' : 'haskell-warning',
-            \ }
-
-if exists('wandbox#default_options')
-    for [name, options] in items(wandbox#default_options)
-        let s:default_options[name] = type(options) == type("") ? options : join(options, ',')
-        unlet options
-    endfor
-endif
+            \ }, 'keep')
 
 let s:result_indent = repeat(' ', get(g:, 'wandbox#result_indent', 2))
 let g:wandbox#echo_command = get(g:, 'wandbox#echo_command', 'echo')
@@ -117,8 +111,8 @@ function! wandbox#run(range_given, ...)
     let code = has_key(parsed, 'file') ?
                 \ s:get_code(parsed.__range__, a:range_given, parsed.file) :
                 \ s:get_code(parsed.__range__, a:range_given)
-    let compilers = split(get(parsed, 'compiler', get(s:default_compiler, &filetype, s:default_compiler['-'])), ',')
-    let options = split(get(parsed, 'options', get(s:default_options, &filetype, s:default_options['-'])), ':')
+    let compilers = split(get(parsed, 'compiler', get(g:wandbox#default_compiler, &filetype, g:wandbox#default_compiler['-'])), ',')
+    let options = split(get(parsed, 'options', get(g:wandbox#default_options, &filetype, g:wandbox#default_options['-'])), ':')
     if len(options) <= 1
         let options = repeat([options == [] ? '' : options[0]], len(compilers))
     endif
