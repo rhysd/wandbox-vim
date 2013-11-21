@@ -47,11 +47,16 @@ if exists('wandbox#default_options')
 endif
 
 let s:result_indent = repeat(' ', get(g:, 'wandbox#result_indent', 2))
+let g:wandbox#echo_command = get(g:, 'wandbox#echo_command', 'echo')
 
 let s:option_parser = s:OptionParser.new()
                                    \.on('--compiler=VAL', '-c', 'Comma separated compiler commands (like "gcc-head,clang-head")')
                                    \.on('--options=VAL', '-o', 'Comma separated options (like "warning,gnu++1y"')
                                    \.on('--file=VAL', '-f', 'File name to execute')
+
+function! s:echo(string)
+    execute g:wandbox#echo_command string(a:string)
+endfunction
 
 function! s:parse_args(args)
     " TODO: parse returned value
@@ -97,12 +102,12 @@ function! s:get_code(range, range_given, ...)
 endfunction
 
 function! s:dump_result(compiler, result)
-    echohl Constant | echomsg '[['.a:compiler.']]' | echohl None
+    echohl Constant | call s:echo('[['.a:compiler.']]') | echohl None
     for l in split(a:result, "\n")
         if l ==# '[compiler]' || l ==# '[output]'
-            echohl MoreMsg | echomsg s:result_indent.(l=='' ? ' ' : l) | echohl None
+            echohl MoreMsg | call s:echo(s:result_indent.(l=='' ? ' ' : l)) | echohl None
         else
-            echomsg  s:result_indent.(l=='' ? ' ' : l)
+            call s:echo(s:result_indent.(l=='' ? ' ' : l))
         endif
     endfor
 endfunction
@@ -122,7 +127,7 @@ function! wandbox#run(range_given, ...)
     for [compiler, output] in results
         call s:dump_result(compiler, output)
     endfor
-    echomsg ' '
+    call s:echo(' ')
 endfunction
 
 function! wandbox#compile(code, compiler, options)
@@ -147,7 +152,7 @@ endfunction
 
 function! wandbox#bark()
     for l in split(wandbox#list(), "\n")
-        echomsg l
+        call s:echo(l)
     endfor
 endfunction
 
