@@ -83,14 +83,15 @@ function! s:format_result(content)
          \, s:is_blank(a:content, 'program_message') ? '' : printf("[output]\n%s", a:content.program_message))
 endfunction
 
-function! s:get_code(range, ...)
+function! s:get_code(range, range_given, ...)
     if a:0 > 0
         " XXX
-        let buf = join(a:range[0] == 1 && a:range[1] == line('$') ?
+        let buf = join(a:range_given ?
                         \ readfile(a:1) :
                         \ readfile(a:1)[a:range[0]-1:a:range[1]-1], "\n")
     else
-        let buf = join(getline(a:range[0], a:range[1]), "\n")."\n"
+        let range = a:range_given ? a:range : [1, line('$')]
+        let buf = join(getline(range[0], range[1]), "\n")."\n"
     endif
     return substitute(buf, '\\', '\\\\', 'g')
 endfunction
@@ -106,12 +107,12 @@ function! s:dump_result(compiler, result)
     endfor
 endfunction
 
-function! wandbox#run(...)
+function! wandbox#run(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
     let code = has_key(parsed, 'file') ?
-                \ s:get_code(parsed.__range__, parsed.file) :
-                \ s:get_code(parsed.__range__)
+                \ s:get_code(parsed.__range__, a:range_given, parsed.file) :
+                \ s:get_code(parsed.__range__, a:range_given)
     let compilers = split(get(parsed, 'compiler', get(s:default_compiler, &filetype, s:default_compiler['-'])), ',')
     let options = split(get(parsed, 'options', get(s:default_options, &filetype, s:default_options['-'])), ':')
     if len(options) <= 1
