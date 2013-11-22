@@ -114,7 +114,7 @@ augroup END
 
 ## TODO
 
-- Types of [vim-quickrun](https://github.com/thinca/vim-quickrun) like wandbox/gcc-head, wandbox/clang-head...
+- Types or runners of [vim-quickrun](https://github.com/thinca/vim-quickrun) like `:QuickRun wandbox:gcc-head,clang-head`
 - Execute asynchronously with Vital.ProcessManager
 - Better command interface
 - Unite interface for compiler options
@@ -122,7 +122,8 @@ augroup END
 - Persistent caching for options which would be used in quickrun type generation and unite interface
 - `doc/wandbox.txt`
 - Automatically expand `#include ""`
-
+- Variable to disable python client
+- Execute remote Gist code
 
 ## Libraries wandbox-vim Using
 
