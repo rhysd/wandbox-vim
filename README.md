@@ -101,9 +101,12 @@ let wandbox#default_options = {
 If you want to execute `:Wandbox` quickly, you can add mappings to `:Wandbox` like below.
 
 ```vim
+" For all filetypes, use default compiler and options
 noremap <Leader>wb :Wandbox<CR>
+" For specific filetypes, specify compilers to use
 augroup wandbox-settings
     autocmd!
+    autocmd FileType cpp noremap <buffer><Leader>ww :Wandbox --compiler=gcc-head,clang-head<CR>
     autocmd FileType cpp noremap <buffer><Leader>wg :Wandbox --compiler=gcc-head<CR>
     autocmd FileType cpp noremap <buffer><Leader>wc :Wandbox --compiler=clang-head<CR>
 augroup END
