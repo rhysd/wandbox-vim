@@ -42,6 +42,7 @@ call extend(g:wandbox#default_options, {
 
 let g:wandbox#result_indent = get(g:, 'wandbox#result_indent', 2)
 let g:wandbox#echo_command = get(g:, 'wandbox#echo_command', 'echo')
+let g:wandbox#disable_python_client = get(g:, 'wandbox#disable_python_client', 0)
 
 let s:option_parser = s:OptionParser.new()
                                    \.on('--compiler=VAL', '-c', 'Comma separated compiler commands (like "gcc-head,clang-head")')
@@ -128,9 +129,13 @@ function! wandbox#run(range_given, ...)
 endfunction
 
 function! wandbox#compile(code, compiler, options)
-    let response = s:HTTP.post('http://melpon.org/wandbox/api/compile.json',
-                             \ s:JSON.encode({'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}),
-                             \ {'Content-type' : 'application/json'})
+    let response = s:HTTP.request({
+                \ 'url' : 'http://melpon.org/wandbox/api/compile.json',
+                \ 'data' : s:JSON.encode({'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}),
+                \ 'headers' : {'Content-type' : 'application/json'},
+                \ 'method' : 'POST',
+                \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
+                \ })
     if ! response.success
         throw "Request has failed! Status " . response.status . ': ' . response.statusText
     endif
@@ -138,6 +143,10 @@ function! wandbox#compile(code, compiler, options)
 endfunction
 
 function! wandbox#list()
+    let response = s:HTTP.request({
+                \ 'url' : 'http://melpon.org/wandbox/api/list.json',
+                \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
+                \ })
     let response = s:HTTP.get('http://melpon.org/wandbox/api/list.json')
     if ! response.success
         throw "Request has failed! Status " . response.status . ': ' . response.statusText

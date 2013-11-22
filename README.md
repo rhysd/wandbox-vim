@@ -122,7 +122,6 @@ augroup END
 - Persistent caching for options which would be used in quickrun type generation and unite interface
 - `doc/wandbox.txt`
 - Automatically expand `#include ""`
-- Variable to disable python client
 - Execute remote Gist code
 
 ## Libraries wandbox-vim Using
