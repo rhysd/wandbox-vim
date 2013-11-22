@@ -40,7 +40,7 @@ call extend(g:wandbox#default_options, {
             \ 'haskell' : 'haskell-warning',
             \ }, 'keep')
 
-let s:result_indent = repeat(' ', get(g:, 'wandbox#result_indent', 2))
+let g:wandbox#result_indent = get(g:, 'wandbox#result_indent', 2)
 let g:wandbox#echo_command = get(g:, 'wandbox#echo_command', 'echo')
 
 let s:option_parser = s:OptionParser.new()
@@ -96,11 +96,12 @@ endfunction
 
 function! s:dump_result(compiler, result)
     echohl Constant | call s:echo('[['.a:compiler.']]') | echohl None
+    let indent = repeat(' ', g:wandbox#result_indent)
     for l in split(a:result, "\n")
         if l ==# '[compiler]' || l ==# '[output]'
             echohl MoreMsg | call s:echo(s:result_indent.(l=='' ? ' ' : l)) | echohl None
         else
-            call s:echo(s:result_indent.(l=='' ? ' ' : l))
+            call s:echo(indent . (l=='' ? ' ' : l))
         endif
     endfor
 endfunction
