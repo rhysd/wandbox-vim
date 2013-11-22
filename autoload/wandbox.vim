@@ -112,9 +112,12 @@ function! wandbox#run(range_given, ...)
                 \ s:get_code(parsed.__range__, a:range_given, parsed.file) :
                 \ s:get_code(parsed.__range__, a:range_given)
     let compilers = split(get(parsed, 'compiler', get(g:wandbox#default_compiler, &filetype, g:wandbox#default_compiler['-'])), ',')
-    let options = split(get(parsed, 'options', get(g:wandbox#default_options, &filetype, g:wandbox#default_options['-'])), ':')
-    if len(options) <= 1
-        let options = repeat([options == [] ? '' : options[0]], len(compilers))
+    if compilers == []
+        throw "At least one compiler must be specified!"
+    endif
+    let options = split(get(parsed, 'options', get(g:wandbox#default_options, &filetype, g:wandbox#default_options['-'])), ':', 1)
+    if len(options) == 1
+        let options = repeat([options[0]], len(compilers))
     endif
     let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1])]')
     for [compiler, output] in results
@@ -124,15 +127,13 @@ function! wandbox#run(range_given, ...)
 endfunction
 
 function! wandbox#compile(code, compiler, options)
-    let json = s:JSON.encode({'code' : a:code, 'options' : a:options, 'compiler' : a:compiler})
     let response = s:HTTP.post('http://melpon.org/wandbox/api/compile.json',
-                             \ json,
+                             \ s:JSON.encode({'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}),
                              \ {'Content-type' : 'application/json'})
     if ! response.success
         throw "Request has failed! Status " . response.status . ': ' . response.statusText
     endif
-    let content = s:JSON.decode(response.content)
-    return s:format_result(content)
+    return s:format_result(s:JSON.decode(response.content))
 endfunction
 
 function! wandbox#list()
