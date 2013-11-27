@@ -108,20 +108,25 @@ function! s:dump_result(compiler, result)
     call s:echo(' ')
 endfunction
 
-function! wandbox#run(range_given, ...)
-    let parsed = s:parse_args(a:000)
-    if parsed == {} | return | endif
-    let code = has_key(parsed, 'file') ?
-                \ s:get_code(parsed.__range__, a:range_given, parsed.file) :
-                \ s:get_code(parsed.__range__, a:range_given)
-    let compilers = split(get(parsed, 'compiler', get(g:wandbox#default_compiler, &filetype, g:wandbox#default_compiler['-'])), ',')
+function! s:prepare_wandbox_args(parsed, range_given)
+    let code = has_key(a:parsed, 'file') ?
+                \ s:get_code(a:parsed.__range__, a:range_given, a:parsed.file) :
+                \ s:get_code(a:parsed.__range__, a:range_given)
+    let compilers = split(get(a:parsed, 'compiler', get(g:wandbox#default_compiler, &filetype, g:wandbox#default_compiler['-'])), ',')
     if compilers == []
         throw "At least one compiler must be specified!"
     endif
-    let options = split(get(parsed, 'options', get(g:wandbox#default_options, &filetype, g:wandbox#default_options['-'])), ':', 1)
+    let options = split(get(a:parsed, 'options', get(g:wandbox#default_options, &filetype, g:wandbox#default_options['-'])), ':', 1)
     if len(options) == 1
         let options = repeat([options[0]], len(compilers))
     endif
+    return [code, compilers, options]
+endfunction
+
+function! wandbox#run(range_given, ...)
+    let parsed = s:parse_args(a:000)
+    if parsed == {} | return | endif
+    let [code, compilers, options] = s:prepare_wandbox_args(parsed, a:range_given)
     let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1])]')
     for [compiler, output] in results
         call s:dump_result(compiler, output)
