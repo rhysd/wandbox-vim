@@ -8,6 +8,7 @@ let s:HTTP = s:V.import('Web.HTTP')
 let s:JSON = s:V.import('Web.JSON')
 let s:List = s:V.import('Data.List')
 let s:Xor128 = s:V.import('Random.Xor128')
+let s:Prelude = s:V.import('Prelude')
 
 let g:wandbox#default_compiler = get(g:, 'wandbox#default_compiler', {})
 call extend(g:wandbox#default_compiler, {
@@ -29,7 +30,7 @@ call extend(g:wandbox#default_compiler, {
             \ }, 'keep')
 
 if exists('g:wandbox#default_options')
-    call map(g:wandbox#default_options, 'type(v:val) == type("") ? v:val : join(v:val, ",")')
+    call map(g:wandbox#default_options, 's:Prelude.is_string(v:val) ? v:val : join(v:val, ",")')
 else
     let g:wandbox#default_options = {}
 endif
@@ -168,21 +169,30 @@ endfunction
 
 function! s:polling_response()
     for work in s:async_works
-        for request in filter(copy(values(work)), '! has_key(v:val, "exit_status")')
+        for request in filter(copy(values(work)), 's:Prelude.is_dict(v:val) && ! has_key(v:val, "_exit_status")')
             let [condition, status] = request.process.checkpid()
             if condition ==# 'exit'
-                let request.exit_status = status
+                let request._exit_status = status
             elseif condition ==# 'error'
-                throw "Error happened while wandbox asynchronous execution: status was ".status
+                throw "Error happened while wandbox asynchronous execution!"
             endif
         endfor
-    endfor
-    for work in s:async_works
-        " TODO: check all requests in a work have been completed
-        "       if all are done, output result and remove the work from
-        "       s:async_works
+
+        " check that the work has been done
+        if s:List.all('type(v:val) != type({}) || has_key(v:val, "_exit_status")', work)
+            for [compiler, request] in items(filter(copy(work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
+                let response = request.callback(request.files)
+                if ! response.success
+                    throw 'Request has failed! Status while executing '.compiler.'!: '. response.status . ': ' . response.statusText
+                endif
+                call s:dump_result(compiler, s:format_result(s:JSON.decode(response.content)))
+            endfor
+            let work._completed = 1
+        endif
     endfor
 
+    " remove completed jobs
+    call filter(s:async_works, '! has_key(v:val, "_completed")')
     if s:async_works != []
         call feedkeys(mode() ==# 'i' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
         return
