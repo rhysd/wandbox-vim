@@ -496,7 +496,7 @@ function! s:clients.curl.on_complete(files)
     let content = s:_readfile(a:files.content)
   endif
 
-  for file in filter(values(a:file), 's:Prelude.is_string(v:val)')
+  for file in filter(values(a:files), 's:Prelude.is_string(v:val)')
     if filereadable(file)
       call delete(file)
     endif
@@ -628,7 +628,7 @@ function! s:clients.wget.on_complete(files)
     let content = s:_readfile(a:files.content)
   endif
 
-  for file in filter(values(a:file), 's:Prelude.is_string(v:val)')
+  for file in filter(values(a:files), 's:Prelude.is_string(v:val)')
     if filereadable(file)
       call delete(file)
     endif
