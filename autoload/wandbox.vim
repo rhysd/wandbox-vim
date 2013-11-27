@@ -56,7 +56,7 @@ let s:option_parser = s:OptionParser.new()
                                    \.on('--options=VAL', '-o', 'Comma separated options (like "warning,gnu++1y"')
                                    \.on('--file=VAL', '-f', 'File name to execute')
 
-let s:actions = {}
+let s:async_works = []
 
 function! s:echo(string)
     execute g:wandbox#echo_command string(a:string)
@@ -160,34 +160,30 @@ function! wandbox#run_async(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
     let [code, compilers, options] = s:prepare_wandbox_args(parsed, a:range_given)
-    let id = s:Xor128.rand()
-    while has_key(s:actions, id)
-        let id = s:Xor128.rand()
-    endwhile
-    let s:actions[id] = {}
+    call add(s:async_works, {})
     for [compiler, option] in s:List.zip(compilers, options)
-        call wandbox#compile_async(code, compiler, option, id)
+        call wandbox#compile_async(code, compiler, option)
     endfor
 endfunction
 
 function! s:polling_response()
-    for action in values(s:actions)
-        for [compiler, request] in items(action)
-            " TODO: check process
+    for work in s:async_works
+        for request in filter(copy(values(work)), '! has_key(v:val, "exit_status")')
             let [condition, status] = request.process.checkpid()
             if condition ==# 'exit'
-                " TODO
                 let request.exit_status = status
             elseif condition ==# 'error'
                 throw "Error happened while wandbox asynchronous execution: status was ".status
             endif
         endfor
-        " TODO: check all requests have been completed
-        "       if all are done, output result and remove action from
-        "       s:actions
+    endfor
+    for work in s:async_works
+        " TODO: check all requests in a work have been completed
+        "       if all are done, output result and remove the work from
+        "       s:async_works
     endfor
 
-    if s:actions != {}
+    if s:async_works != []
         call feedkeys(mode() ==# 'i' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
         return
     endif
@@ -197,14 +193,15 @@ function! s:polling_response()
     let &updatetime = s:previous_updatetime
 endfunction
 
-function! wandbox#compile_async(code, compiler, options, id)
-    let s:actions[a:id][a:compiler] = s:HTTP.request_async({
+function! wandbox#compile_async(code, compiler, options)
+    let s:async_works[-1][a:compiler] = s:HTTP.request_async({
                                        \ 'url' : 'http://melpon.org/wandbox/api/compile.json',
                                        \ 'data' : s:JSON.encode({'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}),
                                        \ 'headers' : {'Content-type' : 'application/json'},
                                        \ 'method' : 'POST',
                                        \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                                        \ })
+    let a:async_works[-1]._tag = 'compile'
     let s:previous_updatetime = &updatetime
     let &updatetime = g:wandbox#updatetime
     augroup wandbox-polling-response
