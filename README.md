@@ -131,6 +131,8 @@ wandbox-vim is standing on the shoulders of below libraries.
 - Vital.Web.HTTP
 - Vital.Web.JSON
 - Vital.OptionParser
+- Vital.Data.List
+- Vital.Random.Xor128
 - vim-prettyprint
 
 ## License
