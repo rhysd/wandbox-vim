@@ -483,19 +483,17 @@ function! s:clients.curl.request_async(settings)
 
   let process =  vimproc#popen3(command)
   let files = a:settings._file
-  if has_output_file
-    let files.output_file = output_file
-  endif
+  let files.has_output_file = has_output_file
   return {'process' : process, 'files' : files, 'callback' : s:clients.curl.on_complete}
 endfunction
 function! s:clients.curl.on_complete(files)
   let headerstr = s:_readfile(a:files.header)
   let header_chunks = split(headerstr, "\r\n\r\n")
   let header = split(get(header_chunks, -1, ''), "\r\n")
-  if has_key(a:files, 'output_file')
+  if a:files.has_output_file
     let content = ''
   else
-    let content = s:_readfile(a:files.output_file)
+    let content = s:_readfile(a:files.content)
   endif
   return [header, content]
 endfunction
@@ -605,9 +603,7 @@ function! s:clients.wget.request_async(settings)
 
   let process = vimproc#popen3(command)
   let files = a:settings._file
-  if has_output_file
-    let files.output_file = output_file
-  endif
+  let files.has_output_file = has_output_file
   return {'process' : process, 'files' : files, 'callback' : s:clients.wget.on_complete}
 endfunction
 function! s:clients.wget.on_complete(files)
@@ -620,10 +616,10 @@ function! s:clients.wget.on_complete(files)
   else
     let header = []
   endif
-  if has_key(a:files, 'output_file')
+  if a:files.has_output_file
     let content = ''
   else
-    let content = s:_readfile(a:files.output_file)
+    let content = s:_readfile(a:files.content)
   endif
   return [header, content]
 endfunction
