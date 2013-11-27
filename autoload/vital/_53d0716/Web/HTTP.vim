@@ -495,7 +495,13 @@ function! s:clients.curl.on_complete(files)
   else
     let content = s:_readfile(a:files.content)
   endif
-  return [header, content]
+
+  for file in filter(values(a:file), 's:Prelude.is_string(v:val)')
+    if filereadable(file)
+      call delete(file)
+    endif
+  endfor
+  return s:_build_response(header, content)
 endfunction
 
 let s:clients.wget = {}
@@ -621,7 +627,13 @@ function! s:clients.wget.on_complete(files)
   else
     let content = s:_readfile(a:files.content)
   endif
-  return [header, content]
+
+  for file in filter(values(a:file), 's:Prelude.is_string(v:val)')
+    if filereadable(file)
+      call delete(file)
+    endif
+  endfor
+  return s:_build_response(header, content)
 endfunction
 
 function! s:_quote()

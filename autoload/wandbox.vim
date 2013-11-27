@@ -201,7 +201,7 @@ function! wandbox#compile_async(code, compiler, options)
                                        \ 'method' : 'POST',
                                        \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                                        \ })
-    let a:async_works[-1]._tag = 'compile'
+    let s:async_works[-1]._tag = 'compile'
     let s:previous_updatetime = &updatetime
     let &updatetime = g:wandbox#updatetime
     augroup wandbox-polling-response
