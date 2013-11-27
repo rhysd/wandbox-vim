@@ -89,8 +89,8 @@ endfunction
 
 function! s:format_result(content)
     return printf("%s\n%s"
-         \, s:is_blank(a:content, 'compiler_message') ? '' : printf("* [compiler]\n\n%s", a:content.compiler_message)
-         \, s:is_blank(a:content, 'program_message') ? '' : printf("* [output]\n\n%s", a:content.program_message))
+         \, s:is_blank(a:content, 'compiler_message') ? '' : printf(" * [compiler]\n\n%s", a:content.compiler_message)
+         \, s:is_blank(a:content, 'program_message') ? '' : printf(" * [output]\n\n%s", a:content.program_message))
 endfunction
 
 function! s:get_code(range, range_given, ...)
@@ -109,7 +109,7 @@ function! s:dump_result(compiler, result)
     let indent = repeat(' ', g:wandbox#result_indent)
     echohl Constant | call s:echo('## '.a:compiler) | echohl None
     for l in split(a:result, "\n")
-        if l ==# '* [compiler]' || l ==# '* [output]'
+        if l ==# ' * [compiler]' || l ==# ' * [output]'
             echohl MoreMsg | call s:echo(l=='' ? ' ' : l) | echohl None
         else
             call s:echo(indent . (l=='' ? ' ' : l))
@@ -192,6 +192,7 @@ function! s:polling_response()
     endfor
 
     " remove completed jobs
+    " Note: doesn't use s:List.with_index because it copy the list
     call filter(s:async_works, '! has_key(v:val, "_completed")')
     if s:async_works != []
         call feedkeys(mode() ==# 'i' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
