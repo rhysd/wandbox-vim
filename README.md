@@ -123,6 +123,7 @@ augroup END
 - `doc/wandbox.txt`
 - Automatically expand `#include ""`
 - Execute remote Gist code
+- No plugin is allowed to have no test
 
 ## Libraries wandbox-vim Using
 
