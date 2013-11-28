@@ -266,5 +266,16 @@ function! wandbox#bark()
     endfor
 endfunction
 
+function! wandbox#abort_async_works()
+    autocmd! wandbox-polling-response
+    if exists('s:previous_updatetime')
+        let &updatetime = s:previous_updatetime
+    endif
+    let s:async_works = []
+    if exists('s:async_outputs')
+        unlet s:async_outputs
+    endif
+endfunction
+
 let &cpo = s:save_cpo
 unlet s:save_cpo
