@@ -216,7 +216,8 @@ function! s:polling_response()
     endfor
 
     if exists('s:async_outputs')
-        call feedkeys(":\<C-u>call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
+        call feedkeys((mode() =~# '^[iR]$' ? "\<C-o>:" : ":\<C-u>")
+                    \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
     endif
 
     " remove completed jobs
