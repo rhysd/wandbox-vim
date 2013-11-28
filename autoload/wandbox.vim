@@ -152,7 +152,6 @@ function! wandbox#list()
                 \ 'url' : 'http://melpon.org/wandbox/api/list.json',
                 \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                 \ })
-    let response = s:HTTP.get('http://melpon.org/wandbox/api/list.json')
     if ! response.success
         throw "Request has failed! Status " . response.status . ': ' . response.statusText
     endif
