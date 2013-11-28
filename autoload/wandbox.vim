@@ -167,7 +167,7 @@ function! wandbox#run_async(range_given, ...)
     endfor
 endfunction
 
-function! wandbox#_dump_results_for_autocmd_workaround()
+function! wandbox#_dump_compile_results_for_autocmd_workaround()
     if ! exists('s:async_outputs')
         return
     endif
@@ -204,7 +204,7 @@ function! s:polling_response()
     endfor
 
     if exists('s:async_outputs')
-        call feedkeys(":\<C-u>call wandbox#_dump_results_for_autocmd_workaround()\<CR>", 'n')
+        call feedkeys(":\<C-u>call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
     endif
 
     " remove completed jobs
