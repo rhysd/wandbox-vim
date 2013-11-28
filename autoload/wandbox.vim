@@ -133,6 +133,18 @@ function! s:prepare_wandbox_args(parsed, range_given)
     return [code, compilers, options]
 endfunction
 
+function! s:is_asynchronously_executable()
+    return s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
+endfunction
+
+function! wandbox#run_sync_or_async(...)
+    if s:is_asynchronously_executable()
+        call call('wandbox#run_async', a:000)
+    else
+        call call('wandbox#run', a:000)
+    endif
+endfunction
+
 function! wandbox#run(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
