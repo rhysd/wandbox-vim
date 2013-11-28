@@ -167,6 +167,16 @@ function! wandbox#run_async(range_given, ...)
     endfor
 endfunction
 
+function! wandbox#_dump_results_for_autocmd_workaround()
+    if ! exists('s:async_outputs')
+        return
+    endif
+    for [compiler, output] in s:async_outputs
+        call s:dump_result(compiler, output)
+    endfor
+    unlet s:async_outputs
+endfunction
+
 function! s:polling_response()
     for work in s:async_works
         for request in filter(copy(values(work)), 's:Prelude.is_dict(v:val) && ! has_key(v:val, "_exit_status")')
@@ -185,11 +195,17 @@ function! s:polling_response()
                 if ! response.success
                     throw 'Request has failed! Status while executing '.compiler.'!: '. response.status . ': ' . response.statusText
                 endif
-                call s:dump_result(compiler, s:format_result(s:JSON.decode(response.content)))
+
+                let s:async_outputs = get(s:, 'async_outputs', [])
+                call add(s:async_outputs, [compiler, s:format_result(s:JSON.decode(response.content))])
             endfor
             let work._completed = 1
         endif
     endfor
+
+    if exists('s:async_outputs')
+        call feedkeys(":\<C-u>call wandbox#_dump_results_for_autocmd_workaround()\<CR>", 'n')
+    endif
 
     " remove completed jobs
     " Note: doesn't use s:List.with_index because it copy the list
