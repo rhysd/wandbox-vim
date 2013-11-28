@@ -2,6 +2,7 @@ scriptencoding utf-8
 let s:save_cpo = &cpo
 set cpo&vim
 
+" Import vital {{{
 let s:V = vital#of('wandbox-vim')
 let s:OptionParser = s:V.import('OptionParser')
 let s:HTTP = s:V.import('Web.HTTP')
@@ -9,7 +10,9 @@ let s:JSON = s:V.import('Web.JSON')
 let s:List = s:V.import('Data.List')
 let s:Xor128 = s:V.import('Random.Xor128')
 let s:Prelude = s:V.import('Prelude')
+"}}}
 
+" Initialize variables {{{
 let g:wandbox#default_compiler = get(g:, 'wandbox#default_compiler', {})
 call extend(g:wandbox#default_compiler, {
             \ '-' : 'gcc-head',
@@ -52,13 +55,17 @@ if ! exists('g:wandbox#updatetime')
                   \ 500
 endif
 
+let s:async_works = []
+"}}}
+
+" Option definitions {{{
 let s:option_parser = s:OptionParser.new()
                                    \.on('--compiler=VAL', '-c', 'Comma separated compiler commands (like "gcc-head,clang-head")')
                                    \.on('--options=VAL', '-o', 'Comma separated options (like "warning,gnu++1y"')
                                    \.on('--file=VAL', '-f', 'File name to execute')
+"}}}
 
-let s:async_works = []
-
+" Utility functions {{{
 function! s:echo(string)
     execute g:wandbox#echo_command string(a:string)
 endfunction
@@ -136,7 +143,9 @@ endfunction
 function! s:is_asynchronously_executable()
     return s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
 endfunction
+"}}}
 
+" Wandbox Compile API {{{
 function! wandbox#run_sync_or_async(...)
     if s:is_asynchronously_executable()
         call call('wandbox#run_async', a:000)
@@ -145,6 +154,7 @@ function! wandbox#run_sync_or_async(...)
     endif
 endfunction
 
+" Compile synchrously {{{
 function! wandbox#run(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
@@ -168,7 +178,8 @@ function! wandbox#compile(code, compiler, options)
     endif
     return s:format_result(s:JSON.decode(response.content))
 endfunction
-
+"}}}
+" Compile asynchronously {{{
 function! wandbox#run_async(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
@@ -248,7 +259,10 @@ function! wandbox#compile_async(code, compiler, options)
         autocmd! CursorHold,CursorHoldI * call s:polling_response()
     augroup END
 endfunction
+"}}}
+"}}}
 
+" Wandbox List API {{{
 function! wandbox#list()
     let response = s:HTTP.request({
                 \ 'url' : 'http://melpon.org/wandbox/api/list.json',
@@ -266,7 +280,9 @@ function! wandbox#bark()
         call s:echo(l)
     endfor
 endfunction
+"}}}
 
+" Abort async works {{{
 function! wandbox#abort_async_works()
     autocmd! wandbox-polling-response
     if exists('s:previous_updatetime')
@@ -277,6 +293,7 @@ function! wandbox#abort_async_works()
         unlet s:async_outputs
     endif
 endfunction
+"}}}
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
