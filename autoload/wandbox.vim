@@ -154,6 +154,66 @@ function! wandbox#run_sync_or_async(...)
     endif
 endfunction
 
+" Polling function {{{
+function! s:polling_response()
+    for work in s:async_works
+        for request in filter(copy(values(work)), 's:Prelude.is_dict(v:val) && ! has_key(v:val, "_exit_status")')
+            let [condition, status] = request.process.checkpid()
+            if condition ==# 'exit'
+                let request._exit_status = status
+            elseif condition ==# 'error'
+                throw "Error happened while wandbox asynchronous execution!"
+            endif
+        endfor
+
+        " check that the work has been done
+        if s:List.all('type(v:val) != type({}) || has_key(v:val, "_exit_status")', work)
+            if work._tag ==# 'compile'
+                for [compiler, request] in items(filter(copy(work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
+                    let response = request.callback(request.files)
+                    if ! response.success
+                        throw 'Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText
+                    endif
+
+                    let s:async_compile_outputs = get(s:, 'async_compile_outputs', [])
+                    call add(s:async_compile_outputs, [compiler, s:format_result(s:JSON.decode(response.content))])
+                endfor
+            elseif work._tag ==# 'list'
+                let response = work._list.callback(work._list.files)
+                if ! response.success
+                    throw 'Request has failed! Status while getting option list!: '. response.status . ': ' . response.statusText
+                endif
+                let s:async_list_outputs = get(s:, 'async_list_outputs', [])
+                call add(s:async_list_outputs, wandbox#prettyprint#pp(s:JSON.decode(response.content)))
+            endif
+            let work._completed = 1
+        endif
+    endfor
+
+    if exists('s:async_compile_outputs')
+        silent call feedkeys((mode() =~# '^[iR]$' ? "\<C-o>:" : ":\<C-u>")
+                    \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
+    endif
+
+    if exists('s:async_list_outputs')
+        silent call feedkeys((mode() =~# '^[iR]$' ? "\<C-o>:" : ":\<C-u>")
+                    \ . "call wandbox#_dump_list_results_for_autocmd_workaround()\<CR>", 'n')
+    endif
+
+    " remove completed jobs
+    " Note: doesn't use s:List.with_index because it copy the list
+    call filter(s:async_works, '! has_key(v:val, "_completed")')
+    if s:async_works != []
+        call feedkeys(mode() ==# 'i' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
+        return
+    endif
+
+    " clear away
+    autocmd! wandbox-polling-response
+    let &updatetime = s:previous_updatetime
+endfunction
+"}}}
+
 " Compile synchrously {{{
 function! wandbox#run(range_given, ...)
     let parsed = s:parse_args(a:000)
@@ -191,57 +251,13 @@ function! wandbox#run_async(range_given, ...)
 endfunction
 
 function! wandbox#_dump_compile_results_for_autocmd_workaround()
-    if ! exists('s:async_outputs')
+    if ! exists('s:async_compile_outputs')
         return
     endif
-    for [compiler, output] in s:async_outputs
+    for [compiler, output] in s:async_compile_outputs
         call s:dump_result(compiler, output)
     endfor
-    unlet s:async_outputs
-endfunction
-
-function! s:polling_response()
-    for work in s:async_works
-        for request in filter(copy(values(work)), 's:Prelude.is_dict(v:val) && ! has_key(v:val, "_exit_status")')
-            let [condition, status] = request.process.checkpid()
-            if condition ==# 'exit'
-                let request._exit_status = status
-            elseif condition ==# 'error'
-                throw "Error happened while wandbox asynchronous execution!"
-            endif
-        endfor
-
-        " check that the work has been done
-        if s:List.all('type(v:val) != type({}) || has_key(v:val, "_exit_status")', work)
-            for [compiler, request] in items(filter(copy(work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
-                let response = request.callback(request.files)
-                if ! response.success
-                    throw 'Request has failed! Status while executing '.compiler.'!: '. response.status . ': ' . response.statusText
-                endif
-
-                let s:async_outputs = get(s:, 'async_outputs', [])
-                call add(s:async_outputs, [compiler, s:format_result(s:JSON.decode(response.content))])
-            endfor
-            let work._completed = 1
-        endif
-    endfor
-
-    if exists('s:async_outputs')
-        call feedkeys((mode() =~# '^[iR]$' ? "\<C-o>:" : ":\<C-u>")
-                    \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
-    endif
-
-    " remove completed jobs
-    " Note: doesn't use s:List.with_index because it copy the list
-    call filter(s:async_works, '! has_key(v:val, "_completed")')
-    if s:async_works != []
-        call feedkeys(mode() ==# 'i' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
-        return
-    endif
-
-    " clear away
-    autocmd! wandbox-polling-response
-    let &updatetime = s:previous_updatetime
+    unlet s:async_compile_outputs
 endfunction
 
 function! wandbox#compile_async(code, compiler, options)
@@ -263,6 +279,12 @@ endfunction
 "}}}
 
 " Wandbox List API {{{
+function! wandbox#bark()
+    for l in split(wandbox#list(), "\n")
+        call s:echo(l)
+    endfor
+endfunction
+
 function! wandbox#list()
     let response = s:HTTP.request({
                 \ 'url' : 'http://melpon.org/wandbox/api/list.json',
@@ -274,10 +296,36 @@ function! wandbox#list()
     return wandbox#prettyprint#pp(s:JSON.decode(response.content))
 endfunction
 
-function! wandbox#bark()
-    for l in split(wandbox#list(), "\n")
-        call s:echo(l)
+function! wandbox#_dump_list_results_for_autocmd_workaround()
+    if ! exists('s:async_list_outputs')
+        return
+    endif
+    for output in s:async_list_outputs
+        for l in split(output, "\n")
+            call s:echo(l)
+        endfor
     endfor
+    " XXX It seems that the program cannot reach here. Why?
+    unlet s:async_list_outputs
+endfunction
+
+function! wandbox#bark_async()
+    call add(s:async_works, {})
+    let s:async_works[-1]._list = s:HTTP.request_async({
+                \ 'url' : 'http://melpon.org/wandbox/api/list.json',
+                \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
+                \ })
+    let s:async_works[-1]._tag = 'list'
+
+    " XXX temporary
+    unlet! s:async_list_outputs
+
+    let s:previous_updatetime = &updatetime
+    let &updatetime = g:wandbox#updatetime
+
+    augroup wandbox-polling-response
+        autocmd! CursorHold,CursorHoldI * call s:polling_response()
+    augroup END
 endfunction
 "}}}
 
@@ -287,10 +335,10 @@ function! wandbox#abort_async_works()
     if exists('s:previous_updatetime')
         let &updatetime = s:previous_updatetime
     endif
+    " TODO: sweep temprary files
     let s:async_works = []
-    if exists('s:async_outputs')
-        unlet s:async_outputs
-    endif
+    unlet! s:async_compile_outputs
+    unlet! s:async_list_outputs
 endfunction
 "}}}
 
