@@ -56,6 +56,7 @@ if ! exists('g:wandbox#updatetime')
 endif
 
 let s:async_works = []
+let s:is_asynchronously_executable = s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
 "}}}
 
 " Option definitions {{{
@@ -139,15 +140,11 @@ function! s:prepare_wandbox_args(parsed, range_given)
     endif
     return [code, compilers, options]
 endfunction
-
-function! s:is_asynchronously_executable()
-    return s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
-endfunction
 "}}}
 
 " Wandbox Compile API {{{
 function! wandbox#run_sync_or_async(...)
-    if s:is_asynchronously_executable()
+    if s:is_asynchronously_executable
         call call('wandbox#run_async', a:000)
     else
         call call('wandbox#run', a:000)
@@ -310,6 +307,10 @@ function! wandbox#_dump_list_results_for_autocmd_workaround()
 endfunction
 
 function! wandbox#show_option_list_async()
+    if ! s:is_asynchronously_executable
+        throw "Cannot execute asynchronously!"
+    endif
+
     call add(s:async_works, {})
     let s:async_works[-1]._list = s:HTTP.request_async({
                 \ 'url' : 'http://melpon.org/wandbox/api/list.json',
