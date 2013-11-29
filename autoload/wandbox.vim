@@ -279,7 +279,7 @@ endfunction
 "}}}
 
 " Wandbox List API {{{
-function! wandbox#bark()
+function! wandbox#show_option_list()
     for l in split(wandbox#list(), "\n")
         call s:echo(l)
     endfor
@@ -309,7 +309,7 @@ function! wandbox#_dump_list_results_for_autocmd_workaround()
     unlet s:async_list_outputs
 endfunction
 
-function! wandbox#bark_async()
+function! wandbox#show_option_list_async()
     call add(s:async_works, {})
     let s:async_works[-1]._list = s:HTTP.request_async({
                 \ 'url' : 'http://melpon.org/wandbox/api/list.json',
