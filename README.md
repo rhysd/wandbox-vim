@@ -124,6 +124,7 @@ augroup END
 - Automatically expand `#include ""`
 - Execute remote Gist code
 - No plugin is allowed to have no test
+- Refactoring
 
 ## Libraries wandbox-vim Using
 
