@@ -115,7 +115,6 @@ augroup END
 ## TODO
 
 - Types or runners of [vim-quickrun](https://github.com/thinca/vim-quickrun) like `:QuickRun wandbox:gcc-head,clang-head`
-- Execute asynchronously with Vital.ProcessManager
 - Better command interface
 - Unite interface for compiler options
 - Unite interface for compilers
@@ -124,7 +123,7 @@ augroup END
 - Automatically expand `#include ""`
 - Execute remote Gist code
 - No plugin is allowed to have no test
-- Refactoring
+- Make an option list prettier
 
 ## Libraries wandbox-vim Using
 
