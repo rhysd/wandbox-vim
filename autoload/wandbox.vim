@@ -80,7 +80,7 @@ function! s:parse_args(args)
     if has_key(parsed, 'help')
         return {}
     elseif has_key(parsed, 'puff-puff')
-        echo '三へ( へ՞ਊ ՞)へ ﾊｯﾊｯ'
+        call s:puffpuff()
         return {}
     endif
     return parsed
@@ -347,6 +347,37 @@ function! wandbox#show_option_list_async()
     call s:start_polling()
 endfunction
 "}}}
+
+" ??? {{{
+let g:wandbox#inu_aa = '三へ( へ՞ਊ ՞)へ '
+function! s:do_inu_animation()
+    let distance = repeat(' ', s:inu_count)
+    let scene = distance . g:wandbox#inu_aa . (s:inu_count / 4 % 2 == 0 ? 'ﾊｯ  ' : '  ﾊｯ')
+
+    if (exists('*strdisplaywidth') ? strdisplaywidth(scene) : len(scene)) >= winwidth(0)
+        let &updatetime = s:previous_updatetime
+        autocmd! wandbox-puffpuff-animation
+        redraw | echo
+        return
+    endif
+
+    echo scene
+
+    let s:inu_count += 1
+    let hoge = 10 / 3 / 5
+    let &updatetime = s:inu_updatetime / (s:inu_count / 5 + 1)
+    call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
+endfunction
+function! s:puffpuff()
+    let s:inu_count = 0
+    let s:inu_updatetime = 150
+    let s:previous_updatetime = &updatetime
+    let &updatetime = s:inu_updatetime
+    augroup wandbox-puffpuff-animation
+        autocmd! CursorHold,CursorHoldI * call s:do_inu_animation()
+    augroup END
+endfunction
+" }}}
 
 " Abort async works {{{
 function! wandbox#abort_async_works()
