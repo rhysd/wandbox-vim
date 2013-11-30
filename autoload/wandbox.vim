@@ -153,6 +153,7 @@ endfunction
 
 " Polling {{{
 function! s:abort(message)
+    call filter(s:async_works, '! has_key(v:val, "_completed")')
     autocmd! wandbox-polling-response
     let &updatetime = s:previous_updatetime
     throw a:message
@@ -164,6 +165,7 @@ function! s:shinchoku_doudesuka(work)
         if condition ==# 'exit'
             let request._exit_status = status
         elseif condition ==# 'error'
+            let a:work._completed = 1
             call s:abort("Error happened while Wandbox asynchronous execution!")
         endif
     endfor
@@ -193,12 +195,12 @@ endfunction
 
 function! s:do_output_with_workaround()
     if exists('s:async_compile_outputs')
-        silent call feedkeys((mode() =~# '^[iR]$' ? "\<C-o>:" : ":\<C-u>")
+        silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
                     \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
     endif
 
     if exists('s:async_list_outputs')
-        silent call feedkeys((mode() =~# '^[iR]$' ? "\<C-o>:" : ":\<C-u>")
+        silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
                     \ . "call wandbox#_dump_list_results_for_autocmd_workaround()\<CR>", 'n')
     endif
 endfunction
@@ -216,10 +218,11 @@ function! s:polling_response()
     call s:do_output_with_workaround()
 
     " remove completed jobs
-    " Note: doesn't use s:List.with_index because it copy the list
     call filter(s:async_works, '! has_key(v:val, "_completed")')
+
+    " schedule next polling
     if s:async_works != []
-        call feedkeys(mode() ==# 'i' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
+        call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
         return
     endif
 
