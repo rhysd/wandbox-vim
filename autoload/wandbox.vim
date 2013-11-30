@@ -158,7 +158,7 @@ function! s:abort(message)
     throw a:message
 endfunction
 
-function! s:check_processes(work)
+function! s:shinchoku_doudesuka(work)
     for request in filter(copy(values(a:work)), 's:Prelude.is_dict(v:val) && ! has_key(v:val, "_exit_status")')
         let [condition, status] = request.process.checkpid()
         if condition ==# 'exit'
@@ -205,7 +205,7 @@ endfunction
 
 function! s:polling_response()
     for work in s:async_works
-        call s:check_processes(work)
+        call s:shinchoku_doudesuka(work)
 
         " when all processes are completed
         if s:List.all('type(v:val) != type({}) || has_key(v:val, "_exit_status")', work)
