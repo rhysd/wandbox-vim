@@ -324,6 +324,7 @@ function! wandbox#_dump_list_results_for_autocmd_workaround()
         endfor
     endfor
     " XXX It seems that the program cannot reach here. Why?
+    "     It cannot reach here even if replace 'call s:echo(l)' with 'echo l'.
     unlet s:async_list_outputs
 endfunction
 
