@@ -151,6 +151,12 @@ function! wandbox#run_sync_or_async(...)
     endif
 endfunction
 
+function! s:abort(message)
+    autocmd! wandbox-polling-response
+    let &updatetime = s:previous_updatetime
+    throw a:message
+endfunction
+
 " Polling function {{{
 function! s:polling_response()
     for work in s:async_works
@@ -159,17 +165,18 @@ function! s:polling_response()
             if condition ==# 'exit'
                 let request._exit_status = status
             elseif condition ==# 'error'
-                throw "Error happened while wandbox asynchronous execution!"
+                call s:abort("Error happened while Wandbox asynchronous execution!")
             endif
         endfor
 
         " check that the work has been done
         if s:List.all('type(v:val) != type({}) || has_key(v:val, "_exit_status")', work)
+            let work._completed = 1
             if work._tag ==# 'compile'
                 for [compiler, request] in items(filter(copy(work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
                     let response = request.callback(request.files)
                     if ! response.success
-                        throw 'Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText
+                        call s:abort('Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
                     endif
 
                     let s:async_compile_outputs = get(s:, 'async_compile_outputs', [])
@@ -178,12 +185,11 @@ function! s:polling_response()
             elseif work._tag ==# 'list'
                 let response = work._list.callback(work._list.files)
                 if ! response.success
-                    throw 'Request has failed! Status while getting option list!: '. response.status . ': ' . response.statusText
+                    call s:abort('Request has failed! Status while getting option list!: '. response.status . ': ' . response.statusText)
                 endif
                 let s:async_list_outputs = get(s:, 'async_list_outputs', [])
                 call add(s:async_list_outputs, wandbox#prettyprint#pp(s:JSON.decode(response.content)))
             endif
-            let work._completed = 1
         endif
     endfor
 
