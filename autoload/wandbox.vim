@@ -64,6 +64,7 @@ let s:option_parser = s:OptionParser.new()
                                    \.on('--compiler=VAL', '-c', 'Comma separated compiler commands (like "gcc-head,clang-head")')
                                    \.on('--options=VAL', '-o', 'Comma separated options (like "warning,gnu++1y"')
                                    \.on('--file=VAL', '-f', 'File name to execute')
+                                   \.on('--puff-puff', '???')
 "}}}
 
 " Utility functions {{{
@@ -72,17 +73,14 @@ function! s:echo(string)
 endfunction
 
 function! s:parse_args(args)
-    " TODO: parse returned value
     let parsed = call(s:option_parser.parse, a:args, s:option_parser)
     if parsed.__unknown_args__ != []
-        if parsed.__unknown_args__[0] == '--puff-puff'
-            echo '三へ( へ՞ਊ ՞)へ ﾊｯﾊｯ'
-            return {}
-        else
-            throw 'Unknown arguments: '.join(parsed.__unknown_args__, ', ')
-        endif
+        throw 'Unknown arguments: '.join(parsed.__unknown_args__, ', ')
     endif
     if has_key(parsed, 'help')
+        return {}
+    elseif has_key(parsed, 'puff-puff')
+        echo '三へ( へ՞ਊ ՞)へ ﾊｯﾊｯ'
         return {}
     endif
     return parsed
