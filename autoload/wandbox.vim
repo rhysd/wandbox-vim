@@ -124,7 +124,7 @@ function! s:dump_result(compiler, result)
     call s:echo(' ')
 endfunction
 
-function! s:prepare_wandbox_args(parsed, range_given)
+function! wandbox#_prepare_args(parsed, range_given)
     let code = has_key(a:parsed, 'file') ?
                 \ s:get_code(a:parsed.__range__, a:range_given, a:parsed.file) :
                 \ s:get_code(a:parsed.__range__, a:range_given)
@@ -191,15 +191,29 @@ function! s:prepare_to_output(work)
     endif
 endfunction
 
-function! s:do_output_with_workaround()
-    if exists('s:async_compile_outputs')
-        silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
-                    \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
-    endif
-
-    if exists('s:async_list_outputs')
-        silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
-                    \ . "call wandbox#_dump_list_results_for_autocmd_workaround()\<CR>", 'n')
+function! s:do_output_with_workaround(...)
+    if a:0 == 0
+        if exists('s:async_compile_outputs')
+            silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
+                        \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
+        endif
+        if exists('s:async_list_outputs')
+            silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
+                        \ . "call wandbox#_dump_list_results_for_autocmd_workaround()\<CR>", 'n')
+        endif
+    elseif a:0 == 1
+        let key = a:1
+        let session = quickrun#session(key)
+        if exists('s:async_compile_outputs')
+            call session.output(s:async_compiler_outputs)
+            unlet s:async_compile_outputs
+        endif
+        if exists('s:async_list_outputs')
+            call session.output(s:async_list_outputs)
+            unlet s:async_list_outputs
+        endif
+    else
+        " Never reach here
     endif
 endfunction
 
@@ -241,7 +255,7 @@ endfunction
 function! wandbox#run(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options] = s:prepare_wandbox_args(parsed, a:range_given)
+    let [code, compilers, options] = wandbox#_prepare_args(parsed, a:range_given)
     let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1])]')
     for [compiler, output] in results
         call s:dump_result(compiler, output)
@@ -266,7 +280,7 @@ endfunction
 function! wandbox#run_async(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options] = s:prepare_wandbox_args(parsed, a:range_given)
+    let [code, compilers, options] = wandbox#_prepare_args(parsed, a:range_given)
     call add(s:async_works, {})
     for [compiler, option] in s:List.zip(compilers, options)
         call wandbox#compile_async(code, compiler, option)
