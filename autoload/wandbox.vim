@@ -349,10 +349,11 @@ endfunction
 "}}}
 
 " ??? {{{
-let g:wandbox#inu_aa = '三へ( へ՞ਊ ՞)へ '
+let g:wandbox#inu_aa = get(g:, 'wandbox#inu_aa', '三へ( へ՞ਊ ՞)へ ')
+let g:wandbox#inu_serif = get(g:, 'wandbox#inu_serif', ['ﾊｯ', 'ﾊｯ'])
 function! s:do_inu_animation()
     let distance = repeat(' ', s:inu_count)
-    let scene = distance . g:wandbox#inu_aa . (s:inu_count / 4 % 2 == 0 ? 'ﾊｯ  ' : '  ﾊｯ')
+    let scene = distance . g:wandbox#inu_aa . (s:inu_count / 4 % 2 == 0 ? g:wandbox#inu_serif[0].'  ' : '  '.g:wandbox#inu_serif[1])
 
     if (exists('*strdisplaywidth') ? strdisplaywidth(scene) : len(scene)) >= winwidth(0)
         let &updatetime = s:previous_updatetime
