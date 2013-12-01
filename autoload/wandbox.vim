@@ -312,6 +312,9 @@ endfunction
 "}}}
 
 " Wandbox List API {{{
+augroup wandbox-polling-response
+augroup END
+
 function! wandbox#show_option_list()
     for l in split(wandbox#list(), "\n")
         call s:echo(l)
