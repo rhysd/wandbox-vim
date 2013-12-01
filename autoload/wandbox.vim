@@ -361,7 +361,7 @@ function! s:do_inu_animation()
         return
     endif
 
-    echo scene
+    redraw | echo scene
 
     let s:inu_count += 1
     let hoge = 10 / 3 / 5
