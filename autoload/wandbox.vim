@@ -93,7 +93,7 @@ function! s:is_blank(dict, key)
     return empty(a:dict[a:key])
 endfunction
 
-function! s:format_result(content)
+function! s:format_process_result(content)
     return printf("%s\n%s"
          \, s:is_blank(a:content, 'compiler_message') ? '' : printf(" * [compiler]\n\n%s", a:content.compiler_message)
          \, s:is_blank(a:content, 'program_message') ? '' : printf(" * [output]\n\n%s", a:content.program_message))
@@ -179,7 +179,7 @@ function! s:prepare_to_output(work)
             endif
 
             let s:async_compile_outputs = get(s:, 'async_compile_outputs', [])
-            call add(s:async_compile_outputs, [compiler, s:format_result(s:JSON.decode(response.content))])
+            call add(s:async_compile_outputs, [compiler, s:format_process_result(s:JSON.decode(response.content))])
         endfor
     elseif a:work._tag ==# 'list'
         let response = a:work._list.callback(a:work._list.files)
@@ -273,7 +273,7 @@ function! wandbox#compile(code, compiler, options)
     if ! response.success
         throw "Request has failed! Status " . response.status . ': ' . response.statusText
     endif
-    return s:format_result(s:JSON.decode(response.content))
+    return s:format_process_result(s:JSON.decode(response.content))
 endfunction
 "}}}
 " Compile asynchronously {{{
