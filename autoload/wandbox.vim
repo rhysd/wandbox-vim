@@ -47,7 +47,7 @@ call extend(g:wandbox#default_options, {
 
 let g:wandbox#result_indent = get(g:, 'wandbox#result_indent', 2)
 let g:wandbox#echo_command = get(g:, 'wandbox#echo_command', 'echo')
-let g:wandbox#disable_python_client = get(g:, 'wandbox#disable_python_client', 0)
+let g:wandbox#disable_python_client = get(g:, 'wandbox#disable_python_client', executable('curl') || executable('wget') ? 1 : 0)
 if ! exists('g:wandbox#updatetime')
     let g:wandbox#updatetime =
                   \ exists('g:quickrun_config["_"]["runner/vimproc/updatetime"]') ?
