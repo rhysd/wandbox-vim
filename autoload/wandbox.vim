@@ -64,6 +64,7 @@ let s:option_parser = s:OptionParser.new()
                                    \.on('--compiler=VAL', '-c', 'Comma separated compiler commands (like "gcc-head,clang-head")')
                                    \.on('--options=VAL', '-o', 'Comma separated options (like "warning,gnu++1y"')
                                    \.on('--file=VAL', '-f', 'File name to execute')
+                                   \.on('--filetype=VAL', 'Filetype with which Wandbox executes')
                                    \.on('--puff-puff', '???')
 "}}}
 
@@ -124,15 +125,19 @@ function! s:dump_result(compiler, result)
     call s:echo(' ')
 endfunction
 
+function! s:filetype(parsed)
+    return has_key(a:parsed, 'filetype') ? a:parsed.filetype : &filetype
+endfunction
+
 function! s:prepare_wandbox_args(parsed, range_given)
     let code = has_key(a:parsed, 'file') ?
                 \ s:get_code(a:parsed.__range__, a:range_given, a:parsed.file) :
                 \ s:get_code(a:parsed.__range__, a:range_given)
-    let compilers = split(get(a:parsed, 'compiler', get(g:wandbox#default_compiler, &filetype, g:wandbox#default_compiler['-'])), ',')
+    let compilers = split(get(a:parsed, 'compiler', get(g:wandbox#default_compiler, s:filetype(a:parsed), g:wandbox#default_compiler['-'])), ',')
     if compilers == []
         throw "At least one compiler must be specified!"
     endif
-    let options = split(get(a:parsed, 'options', get(g:wandbox#default_options, &filetype, g:wandbox#default_options['-'])), ':', 1)
+    let options = split(get(a:parsed, 'options', get(g:wandbox#default_options, s:filetype(a:parsed), g:wandbox#default_options['-'])), ':', 1)
     if len(options) == 1
         let options = repeat([options[0]], len(compilers))
     endif
