@@ -5,11 +5,6 @@ set cpo&vim
 augroup wandbox-polling-quickrun-response
 augroup END
 
-" resolve dependency
-if ! exists('g:wandbox#_async_works')
-    runtime autoload/wandbox.vim
-endif
-
 let s:runner = { 'config' : {
              \     'compiler' : '',
              \     'options' : '',
