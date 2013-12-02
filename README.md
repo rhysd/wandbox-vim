@@ -128,7 +128,8 @@ augroup END
 - Make an option list prettier
 - Separate default setting and use setting
 - --filetype option
-- output error and warning to location-list
+- Output error and warning to location-list
+- Do not use python interface because it can't cancel with `<C-c>`
 
 ## Libraries wandbox-vim Using
 
