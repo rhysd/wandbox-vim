@@ -126,6 +126,9 @@ augroup END
 - Execute remote Gist code
 - No plugin is allowed to have no test
 - Make an option list prettier
+- Separate default setting and use setting
+- --filetype option
+- output error and warning to location-list
 
 ## Libraries wandbox-vim Using
 
