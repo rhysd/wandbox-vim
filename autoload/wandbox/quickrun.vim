@@ -1,7 +1,7 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-function! quickrun#wandbox#add_wandbox_type(quickrun_config)
+function! wandbox#quickrun#add_wandbox_type(quickrun_config)
     let a:quickrun_config['wandbox'] = {
             \ 'command' : 'vim',
             \ 'runner' : 'vimproc',
