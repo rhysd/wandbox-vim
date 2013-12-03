@@ -182,9 +182,18 @@ function! s:prepare_to_output(work)
             if ! response.success
                 call s:abort('Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
             endif
-
-            let s:async_compile_outputs = get(s:, 'async_compile_outputs', [])
-            call add(s:async_compile_outputs, [compiler, s:format_process_result(s:JSON.decode(response.content))])
+            if has_key(a:work, '_quickrun_session_key')
+                " if executed via quickrun runner
+                let s:async_quickrun_outputs = get(s:, 'async_quickrun_outputs', [])
+                call add(s:async_quickrun_outputs, [
+                            \ a:work._quickrun_session_key,
+                            \ compiler,
+                            \ s:format_process_result(s:JSON.decode(response.content))
+                            \ ])
+            else
+                let s:async_compile_outputs = get(s:, 'async_compile_outputs', [])
+                call add(s:async_compile_outputs, [compiler, s:format_process_result(s:JSON.decode(response.content))])
+            endif
         endfor
     elseif a:work._tag ==# 'list'
         let response = a:work._list.callback(a:work._list.files)
@@ -197,31 +206,24 @@ function! s:prepare_to_output(work)
 endfunction
 
 function! s:do_output_with_workaround(...)
-    if a:0 == 0
-        if exists('s:async_compile_outputs')
-            silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
-                        \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
-        endif
-        if exists('s:async_list_outputs')
-            silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
-                        \ . "call wandbox#_dump_list_results_for_autocmd_workaround()\<CR>", 'n')
-        endif
-    elseif a:0 == 1
-        let key = a:1
-        let session = quickrun#session(key)
-        if exists('s:async_compile_outputs')
-            call session.output(s:async_compiler_outputs)
-            unlet s:async_compile_outputs
-        endif
-        if exists('s:async_list_outputs')
-            call session.output(s:async_list_outputs)
-            unlet s:async_list_outputs
-        endif
-    else
-        " Never reach here
+    if exists('s:async_compile_outputs')
+        silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
+                    \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
+    endif
+    if exists('s:async_list_outputs')
+        silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
+                    \ . "call wandbox#_dump_list_results_for_autocmd_workaround()\<CR>", 'n')
+    endif
+    if exists('s:async_quickrun_outputs')
+        for [key, compiler, output] in s:async_quickrun_outputs
+            let session = quickrun#session(key)
+            call session.output(output)
+        endfor
+        unlet s:async_quickrun_outputs
     endif
 endfunction
 
+let s:count = 0
 function! s:polling_response()
     for work in g:wandbox#_async_works
         call s:shinchoku_doudesuka(work)
@@ -248,7 +250,7 @@ function! s:polling_response()
     let &updatetime = s:previous_updatetime
 endfunction
 
-function! s:start_polling()
+function! wandbox#_start_polling()
     let s:previous_updatetime = &updatetime
     let &updatetime = g:wandbox#updatetime
     augroup wandbox-polling-response
@@ -311,7 +313,7 @@ function! wandbox#compile_async(code, compiler, options)
                                        \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                                        \ })
     let g:wandbox#_async_works[-1]._tag = 'compile'
-    call s:start_polling()
+    call wandbox#_start_polling()
 endfunction
 "}}}
 "}}}
@@ -363,7 +365,7 @@ function! wandbox#show_option_list_async()
     " XXX temporary
     unlet! s:async_list_outputs
 
-    call s:start_polling()
+    call wandbox#_start_polling()
 endfunction
 "}}}
 
@@ -412,8 +414,9 @@ function! wandbox#abort_async_works()
 endfunction
 "}}}
 
+" A function to load this file
 function! wandbox#touch()
-    
 endfunction
+
 let &cpo = s:save_cpo
 unlet s:save_cpo

@@ -12,6 +12,7 @@ let s:runner = { 'config' : {
 
 function! s:runner.run(commands, input, session)
     call wandbox#touch()
+
     let code = substitute(join(readfile(a:session.config.srcfile), "\n"), '\\', '\\\\', 'g')
     if self.config.compiler ==# ''
         let compilers = split(get(g:wandbox#default_compiler, &filetype, g:wandbox#default_compiler['-']), ',')
@@ -28,16 +29,12 @@ function! s:runner.run(commands, input, session)
         let options = repeat([options[0]], len(compilers))
     endif
 
-    call add(g:wandbox#_async_works, {})
+    call add(g:wandbox#_async_works, {'_quickrun_session_key' : a:session.continue()})
 
     for [compiler, option] in s:List.zip(compilers, options)
         call wandbox#compile_async(code, compiler, option)
     endfor
-
-endfunction
-
-function! s:polling_quickrun_result(session_key)
-    
+    call wandbox#_start_polling()
 endfunction
 
 function! quickrun#runner#wandbox#new()
