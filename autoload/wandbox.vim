@@ -67,6 +67,11 @@ let s:option_parser = s:OptionParser.new()
                                    \.on('--puff-puff', '???')
 "}}}
 
+" Initialize augroup {{{
+augroup wandbox-polling-response
+augroup END
+"}}}
+
 " Utility functions {{{
 function! s:echo(string)
     execute g:wandbox#echo_command string(a:string)
@@ -312,9 +317,6 @@ endfunction
 "}}}
 
 " Wandbox List API {{{
-augroup wandbox-polling-response
-augroup END
-
 function! wandbox#show_option_list()
     for l in split(wandbox#list(), "\n")
         call s:echo(l)
