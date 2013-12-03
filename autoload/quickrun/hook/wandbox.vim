@@ -8,6 +8,7 @@ let s:hook = {
 \       "enable" : 0,
 \       "compiler" : "",
 \       "options" : "",
+\       "filetype" : "",
 \   }
 \}
 
@@ -20,6 +21,9 @@ function! s:hook.on_normalized(session, context)
     endif
     if self.config.options != ''
         let wandbox_opts .= ' --options=' . self.config.options
+    endif
+    if self.config.filetype != ''
+        let wandbox_opts .= ' --filetype=' . self.config.filetype
     endif
     let a:session.config.exec = '%C -N -u NONE -i NONE -V1 -e -s -c "set rtp+=' . s:wandbox_root . '" -c "runtime plugin/wandbox.vim" -c "setf '.&filetype.'" -c "WandboxSync --file=%s'.wandbox_opts.'" -c qall!'
 endfunction
