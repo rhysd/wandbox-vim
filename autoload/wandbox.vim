@@ -412,5 +412,8 @@ function! wandbox#abort_async_works()
 endfunction
 "}}}
 
+function! wandbox#touch()
+    
+endfunction
 let &cpo = s:save_cpo
 unlet s:save_cpo
