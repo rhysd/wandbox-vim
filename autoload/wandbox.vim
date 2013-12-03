@@ -103,8 +103,8 @@ endfunction
 function! s:get_code(range, range_given, ...)
     if a:0 > 0
         let buf = join(a:range_given ?
-                        \ readfile(a:1) :
-                        \ readfile(a:1)[a:range[0]-1:a:range[1]-1], "\n")
+                        \ readfile(a:1)[a:range[0]-1:a:range[1]-1] :
+                        \ readfile(a:1), "\n")
     else
         let range = a:range_given ? a:range : [1, line('$')]
         let buf = join(getline(range[0], range[1]), "\n")."\n"
