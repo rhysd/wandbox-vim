@@ -205,7 +205,7 @@ function! s:prepare_to_output(work)
     endif
 endfunction
 
-function! s:do_output_with_workaround(...)
+function! s:do_output_with_workaround()
     if exists('s:async_compile_outputs')
         silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
                     \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
