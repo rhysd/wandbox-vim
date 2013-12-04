@@ -55,7 +55,7 @@ if ! exists('g:wandbox#updatetime')
                   \ 500
 endif
 
-let g:wandbox#_async_works = []
+let s:async_works = []
 let s:is_asynchronously_executable = s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
 "}}}
 
@@ -134,7 +134,7 @@ function! s:filetype(parsed)
     return has_key(a:parsed, 'filetype') ? a:parsed.filetype : &filetype
 endfunction
 
-function! wandbox#_prepare_args(parsed, range_given)
+function! s:prepare_args(parsed, range_given)
     let code = has_key(a:parsed, 'file') ?
                 \ s:get_code(a:parsed.__range__, a:range_given, a:parsed.file) :
                 \ s:get_code(a:parsed.__range__, a:range_given)
@@ -161,7 +161,7 @@ endfunction
 
 " Polling {{{
 function! s:abort(message)
-    call filter(g:wandbox#_async_works, '! has_key(v:val, "_completed")')
+    call filter(s:async_works, '! has_key(v:val, "_completed")')
     autocmd! wandbox-polling-response
     let &updatetime = s:previous_updatetime
     unlet s:previous_updatetime
@@ -221,7 +221,7 @@ function! s:do_output_with_workaround()
 endfunction
 
 function! s:polling_response()
-    for work in g:wandbox#_async_works
+    for work in s:async_works
         if wandbox#_shinchoku_doudesuka(work)
             " when all processes are completed
             call s:prepare_to_output(work)
@@ -231,10 +231,10 @@ function! s:polling_response()
     call s:do_output_with_workaround()
 
     " remove completed jobs
-    call filter(g:wandbox#_async_works, '! has_key(v:val, "_completed")')
+    call filter(s:async_works, '! has_key(v:val, "_completed")')
 
     " schedule next polling
-    if g:wandbox#_async_works != []
+    if s:async_works != []
         call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
         return
     endif
@@ -259,7 +259,7 @@ endfunction
 function! wandbox#run(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options] = wandbox#_prepare_args(parsed, a:range_given)
+    let [code, compilers, options] = s:prepare_args(parsed, a:range_given)
     let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1])]')
     for [compiler, output] in results
         call s:dump_result(compiler, output)
@@ -284,10 +284,10 @@ endfunction
 function! wandbox#run_async(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options] = wandbox#_prepare_args(parsed, a:range_given)
-    call add(g:wandbox#_async_works, {})
+    let [code, compilers, options] = s:prepare_args(parsed, a:range_given)
+    call add(s:async_works, {})
     for [compiler, option] in s:List.zip(compilers, options)
-        call wandbox#compile_async(code, compiler, option, g:wandbox#_async_works[-1])
+        call wandbox#compile_async(code, compiler, option, s:async_works[-1])
     endfor
     call s:start_polling()
 endfunction
@@ -352,12 +352,12 @@ function! wandbox#show_option_list_async()
         throw "Cannot execute asynchronously!"
     endif
 
-    call add(g:wandbox#_async_works, {})
-    let g:wandbox#_async_works[-1]._list = s:HTTP.request_async({
+    call add(s:async_works, {})
+    let s:async_works[-1]._list = s:HTTP.request_async({
                 \ 'url' : 'http://melpon.org/wandbox/api/list.json',
                 \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                 \ })
-    let g:wandbox#_async_works[-1]._tag = 'list'
+    let s:async_works[-1]._tag = 'list'
 
     " XXX temporary
     unlet! s:async_list_outputs
@@ -407,7 +407,7 @@ function! wandbox#abort_async_works()
         unlet s:previous_updatetime
     endif
     " TODO: sweep temprary files
-    let g:wandbox#_async_works = []
+    let s:async_works = []
     unlet! s:async_compile_outputs
     unlet! s:async_list_outputs
 endfunction
