@@ -223,7 +223,7 @@ function! s:do_output_with_workaround()
         let outputs = {}
         for [key, compiler, output] in s:async_quickrun_outputs
             if ! has_key(outputs, key) | let outputs[key] = '' | endif
-            let outputs[key] .= "## " . compiler . "\n" . output
+            let outputs[key] .= "## " . compiler . output . "\n"
         endfor
         unlet s:async_quickrun_outputs
         for [key, output] in items(outputs)
