@@ -168,8 +168,12 @@ function! s:shinchoku_doudesuka(work)
         let [condition, status] = request.process.checkpid()
         if condition ==# 'exit'
             let request._exit_status = status
+            call request.process.stdout.close()
+            call request.process.stderr.close()
         elseif condition ==# 'error'
             let a:work._completed = 1
+            call request.process.stdout.close()
+            call request.process.stderr.close()
             call s:abort("Error happened while Wandbox asynchronous execution!")
         endif
     endfor
