@@ -168,7 +168,7 @@ function! s:abort(message)
     throw a:message
 endfunction
 
-function! s:shinchoku_doudesuka(work)
+function! wandbox#_shinchoku_doudesuka(work)
     for request in filter(copy(values(a:work)), 's:Prelude.is_dict(v:val) && ! has_key(v:val, "_exit_status")')
         let [condition, status] = request.process.checkpid()
         if condition ==# 'exit'
@@ -182,6 +182,7 @@ function! s:shinchoku_doudesuka(work)
             call s:abort("Error happened while Wandbox asynchronous execution!")
         endif
     endfor
+    return s:List.all('type(v:val) != type({}) || has_key(v:val, "_exit_status")', a:work)
 endfunction
 
 function! s:prepare_to_output(work)
@@ -241,10 +242,8 @@ endfunction
 
 function! s:polling_response()
     for work in g:wandbox#_async_works
-        call s:shinchoku_doudesuka(work)
-
-        " when all processes are completed
-        if s:List.all('type(v:val) != type({}) || has_key(v:val, "_exit_status")', work)
+        if wandbox#_shinchoku_doudesuka(work)
+            " when all processes are completed
             call s:prepare_to_output(work)
         endif
     endfor
@@ -331,7 +330,7 @@ function! wandbox#compile_async(code, compiler, options, work)
                                        \ 'method' : 'POST',
                                        \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                                        \ })
-    let g:wandbox#_async_works[-1]._tag = 'compile'
+    let a:work._tag = 'compile'
 endfunction
 "}}}
 "}}}
