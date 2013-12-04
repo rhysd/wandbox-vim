@@ -85,7 +85,7 @@ function! s:polling_response(key)
             throw "Error!"
             call s:abort('Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
         endif
-        let result .= '## ' . compiler . s:format_process_result(s:JSON.decode(response.content)) . "\n"
+        let result .= '## ' . compiler . "\n" . s:format_process_result(s:JSON.decode(response.content)) . "\n"
     endfor
 
     call session.output(result)

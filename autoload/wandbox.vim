@@ -410,9 +410,10 @@ function! wandbox#abort_async_works()
 endfunction
 "}}}
 
-" A function to load this file
+" A function to load this file {{{
 function! wandbox#touch()
 endfunction
+"}}}
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
