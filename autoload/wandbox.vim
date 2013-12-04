@@ -159,6 +159,7 @@ function! s:abort(message)
     call filter(s:async_works, '! has_key(v:val, "_completed")')
     autocmd! wandbox-polling-response
     let &updatetime = s:previous_updatetime
+    unlet s:previous_updatetime
     throw a:message
 endfunction
 
@@ -232,11 +233,14 @@ function! s:polling_response()
     " clear away
     autocmd! wandbox-polling-response
     let &updatetime = s:previous_updatetime
+    unlet s:previous_updatetime
 endfunction
 
 function! s:start_polling()
-    let s:previous_updatetime = &updatetime
-    let &updatetime = g:wandbox#updatetime
+    if ! exists('s:previous_updatetime')
+        let s:previous_updatetime = &updatetime
+        let &updatetime = g:wandbox#updatetime
+    endif
     augroup wandbox-polling-response
         autocmd! CursorHold,CursorHoldI * call s:polling_response()
     augroup END
@@ -362,6 +366,7 @@ function! s:do_inu_animation()
 
     if (exists('*strdisplaywidth') ? strdisplaywidth(scene) : len(scene)) >= winwidth(0)
         let &updatetime = s:previous_updatetime
+        unlet s:previous_updatetime
         autocmd! wandbox-puffpuff-animation
         redraw | echo
         return
@@ -390,6 +395,7 @@ function! wandbox#abort_async_works()
     autocmd! wandbox-polling-response
     if exists('s:previous_updatetime')
         let &updatetime = s:previous_updatetime
+        unlet s:previous_updatetime
     endif
     " TODO: sweep temprary files
     let s:async_works = []
