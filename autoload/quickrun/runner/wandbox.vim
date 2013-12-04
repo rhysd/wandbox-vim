@@ -1,18 +1,24 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
+call wandbox#touch()
+
 let s:V = vital#of('wandbox-vim')
+let s:Prelude = s:V.import('Prelude')
+let s:JSON = s:V.import('Web.JSON')
 let s:List = s:V.import('Data.List')
 
 let s:runner = { 'config' : {
              \     'compiler' : '',
              \     'options' : '',
+             \     'updatetime' : g:wandbox#updatetime,
              \   }
              \ }
 
-function! s:runner.run(commands, input, session)
-    call wandbox#touch()
+augroup wandbox-quickrun-polling
+augroup END
 
+function! s:runner.run(commands, input, session)
     let code = substitute(join(readfile(a:session.config.srcfile), "\n"), '\\', '\\\\', 'g')
     if self.config.compiler ==# ''
         let compilers = split(get(g:wandbox#default_compiler, &filetype, g:wandbox#default_compiler['-']), ',')
@@ -29,11 +35,62 @@ function! s:runner.run(commands, input, session)
         let options = repeat(options, len(compilers))
     endif
 
-    call add(g:wandbox#_async_works, {'_quickrun_session_key' : a:session.continue()})
+    let a:session._work = {}
+    if self.config.updatetime > 0
+        let self._updatetime = &updatetime
+        let &updatetime = self.config.updatetime
+    endif
 
     for [compiler, option] in s:List.zip(compilers, options)
-        call wandbox#compile_async(code, compiler, option)
+        call wandbox#compile_async(code, compiler, option, a:session._work)
     endfor
+
+    let key = a:session.continue()
+    augroup wandbox-quickrun-polling
+        execute 'autocmd! CursorHold,CursorHoldI * call s:polling_response('.string(key).')'
+    augroup END
+endfunction
+
+function! s:runner.sweep()
+    autocmd! wandbox-quickrun-polling
+    if has_key(self, '_updatetime')
+        let &updatetime = self._updatetime
+    endif
+endfunction
+
+function! s:is_blank(dict, key)
+    if ! has_key(a:dict, a:key)
+        return 1
+    endif
+    return empty(a:dict[a:key])
+endfunction
+
+function! s:format_process_result(content)
+    return printf("%s\n%s"
+         \, s:is_blank(a:content, 'compiler_message') ? '' : printf(" * [compiler]\n\n%s", a:content.compiler_message)
+         \, s:is_blank(a:content, 'program_message') ? '' : printf(" * [output]\n\n%s", a:content.program_message))
+endfunction
+
+function! s:polling_response(key)
+    let session = quickrun#session(a:key)
+    if ! wandbox#_shinchoku_doudesuka(session._work)
+        call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
+        return
+    endif
+
+    let result = ''
+    for [compiler, request] in items(filter(copy(session._work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
+        let response = request.callback(request.files)
+        if ! response.success
+            throw "Error!"
+            call s:abort('Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
+        endif
+        let result .= '## ' . compiler . s:format_process_result(s:JSON.decode(response.content)) . "\n"
+    endfor
+
+    call session.output(result)
+    " XXX always passes 1
+    call session.finish(1)
 endfunction
 
 function! quickrun#runner#wandbox#new()
