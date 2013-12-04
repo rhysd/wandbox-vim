@@ -223,7 +223,6 @@ function! s:do_output_with_workaround(...)
     endif
 endfunction
 
-let s:count = 0
 function! s:polling_response()
     for work in g:wandbox#_async_works
         call s:shinchoku_doudesuka(work)
