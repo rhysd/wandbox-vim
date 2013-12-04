@@ -164,6 +164,7 @@ function! s:abort(message)
     call filter(g:wandbox#_async_works, '! has_key(v:val, "_completed")')
     autocmd! wandbox-polling-response
     let &updatetime = s:previous_updatetime
+    unlet s:previous_updatetime
     throw a:message
 endfunction
 
@@ -172,8 +173,12 @@ function! s:shinchoku_doudesuka(work)
         let [condition, status] = request.process.checkpid()
         if condition ==# 'exit'
             let request._exit_status = status
+            call request.process.stdout.close()
+            call request.process.stderr.close()
         elseif condition ==# 'error'
             let a:work._completed = 1
+            call request.process.stdout.close()
+            call request.process.stderr.close()
             call s:abort("Error happened while Wandbox asynchronous execution!")
         endif
     endfor
@@ -391,6 +396,7 @@ function! s:do_inu_animation()
 
     if (exists('*strdisplaywidth') ? strdisplaywidth(scene) : len(scene)) >= winwidth(0)
         let &updatetime = s:previous_updatetime
+        unlet s:previous_updatetime
         autocmd! wandbox-puffpuff-animation
         redraw | echo
         return

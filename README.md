@@ -86,17 +86,17 @@ cp -R plugin/* ~/.vim/plugin/
 
 ### Variables
 
-You can set the default compiler and default options for each filetype by `wandbox#default_compiler` and `wandbox#default_options`.
+You can set the default compiler and default options for each filetype by `g:wandbox#default_compiler` and `g:wandbox#default_options`.
 
 ```vim
 " Set default compilers for each filetype
-let wandbox#default_compiler = {
+let g:wandbox#default_compiler = {
 \   'cpp' : 'clang-head',
 \   'ruby' : 'ruby-1.9.3-p0',
 \ }
 
 " Set default options for each filetype.  Type of value is string or list of string
-let wandbox#default_options = {
+let g:wandbox#default_options = {
 \   'cpp' : 'warning,optimize,boost-1.55',
 \   'haskell' : [
 \     'haskell-warning',
