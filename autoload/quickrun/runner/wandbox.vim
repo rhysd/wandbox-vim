@@ -34,7 +34,6 @@ function! s:runner.run(commands, input, session)
     for [compiler, option] in s:List.zip(compilers, options)
         call wandbox#compile_async(code, compiler, option)
     endfor
-    call wandbox#_start_polling()
 endfunction
 
 function! quickrun#runner#wandbox#new()

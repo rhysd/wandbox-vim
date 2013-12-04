@@ -250,7 +250,7 @@ function! s:polling_response()
     unlet s:previous_updatetime
 endfunction
 
-function! wandbox#_start_polling()
+function! s:start_polling()
     if ! exists('s:previous_updatetime')
         let s:previous_updatetime = &updatetime
         let &updatetime = g:wandbox#updatetime
@@ -315,7 +315,7 @@ function! wandbox#compile_async(code, compiler, options)
                                        \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                                        \ })
     let g:wandbox#_async_works[-1]._tag = 'compile'
-    call wandbox#_start_polling()
+    call s:start_polling()
 endfunction
 "}}}
 "}}}
@@ -367,7 +367,7 @@ function! wandbox#show_option_list_async()
     " XXX temporary
     unlet! s:async_list_outputs
 
-    call wandbox#_start_polling()
+    call s:start_polling()
 endfunction
 "}}}
 
