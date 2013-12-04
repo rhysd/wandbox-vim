@@ -179,7 +179,10 @@ function! wandbox#_shinchoku_doudesuka(work)
             let a:work._completed = 1
             call request.process.stdout.close()
             call request.process.stderr.close()
-            call s:abort("Error happened while Wandbox asynchronous execution!")
+            " XXX Is this OK?
+            echohl ErrorMsg
+            echomsg "Error happened while Wandbox asynchronous execution!"
+            echohl None
         endif
     endfor
     return s:List.all('type(v:val) != type({}) || has_key(v:val, "_exit_status")', a:work)
