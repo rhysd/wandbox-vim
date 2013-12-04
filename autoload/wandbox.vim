@@ -139,7 +139,7 @@ function! wandbox#_prepare_args(parsed, range_given)
     endif
     let options = split(get(a:parsed, 'options', get(g:wandbox#default_options, &filetype, g:wandbox#default_options['-'])), ':', 1)
     if len(options) == 1
-        let options = repeat([options[0]], len(compilers))
+        let options = repeat(options, len(compilers))
     endif
     return [code, compilers, options]
 endfunction

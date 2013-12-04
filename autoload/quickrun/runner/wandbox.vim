@@ -26,7 +26,7 @@ function! s:runner.run(commands, input, session)
         let options = split(self.config.options, ':', 1)
     endif
     if len(options) == 1
-        let options = repeat([options[0]], len(compilers))
+        let options = repeat(options, len(compilers))
     endif
 
     call add(g:wandbox#_async_works, {'_quickrun_session_key' : a:session.continue()})
