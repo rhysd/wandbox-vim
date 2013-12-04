@@ -193,18 +193,8 @@ function! s:prepare_to_output(work)
             if ! response.success
                 call s:abort('Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
             endif
-            if has_key(a:work, '_quickrun_session_key')
-                " if executed via quickrun runner
-                let s:async_quickrun_outputs = get(s:, 'async_quickrun_outputs', [])
-                call add(s:async_quickrun_outputs, [
-                            \ a:work._quickrun_session_key,
-                            \ compiler,
-                            \ s:format_process_result(s:JSON.decode(response.content))
-                            \ ])
-            else
-                let s:async_compile_outputs = get(s:, 'async_compile_outputs', [])
-                call add(s:async_compile_outputs, [compiler, s:format_process_result(s:JSON.decode(response.content))])
-            endif
+            let s:async_compile_outputs = get(s:, 'async_compile_outputs', [])
+            call add(s:async_compile_outputs, [compiler, s:format_process_result(s:JSON.decode(response.content))])
         endfor
     elseif a:work._tag ==# 'list'
         let response = a:work._list.callback(a:work._list.files)
@@ -224,19 +214,6 @@ function! s:do_output_with_workaround()
     if exists('s:async_list_outputs')
         silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
                     \ . "call wandbox#_dump_list_results_for_autocmd_workaround()\<CR>", 'n')
-    endif
-    if exists('s:async_quickrun_outputs')
-        let outputs = {}
-        for [key, compiler, output] in s:async_quickrun_outputs
-            if ! has_key(outputs, key) | let outputs[key] = '' | endif
-            let outputs[key] .= "## " . compiler . output . "\n"
-        endfor
-        unlet s:async_quickrun_outputs
-        for [key, output] in items(outputs)
-            let session = quickrun#session(key)
-            call session.output(output)
-            call session.finish(1)
-        endfor
     endif
 endfunction
 
