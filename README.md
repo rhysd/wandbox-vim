@@ -60,6 +60,13 @@ Below is an example for heavy use.
 :Wandbox --compiler=clang-3.3 --options=boost-1.55,c++1y,warning,optimize,sprout
 ```
 
+If you want to use wandbox with [vim-quickrun](https://github.com/thinca/vim-quickrun), `wandbox` runner for quickrun is available.
+
+```
+:QuickRun -runner wandbox
+```
+
+
 ## Installation
 
 Use modern plugin manager like [neobundle.vim](https://github.com/Shougo/neobundle.vim) or [vundle](https://github.com/gmarik/vundle).
@@ -114,7 +121,6 @@ augroup END
 
 ## TODO
 
-- Types or runners of [vim-quickrun](https://github.com/thinca/vim-quickrun) like `:QuickRun wandbox:gcc-head,clang-head`
 - Better command interface
 - Unite interface for compiler options
 - Unite interface for compilers
