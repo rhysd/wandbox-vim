@@ -308,8 +308,9 @@ function! wandbox#run_async(range_given, ...)
     let [code, compilers, options] = wandbox#_prepare_args(parsed, a:range_given)
     call add(g:wandbox#_async_works, {})
     for [compiler, option] in s:List.zip(compilers, options)
-        call wandbox#compile_async(code, compiler, option)
+        call wandbox#compile_async(code, compiler, option, g:wandbox#_async_works[-1])
     endfor
+    call s:start_polling()
 endfunction
 
 function! wandbox#_dump_compile_results_for_autocmd_workaround()
@@ -322,8 +323,8 @@ function! wandbox#_dump_compile_results_for_autocmd_workaround()
     unlet s:async_compile_outputs
 endfunction
 
-function! wandbox#compile_async(code, compiler, options)
-    let g:wandbox#_async_works[-1][a:compiler] = s:HTTP.request_async({
+function! wandbox#compile_async(code, compiler, options, work)
+    let a:work[a:compiler] = s:HTTP.request_async({
                                        \ 'url' : 'http://melpon.org/wandbox/api/compile.json',
                                        \ 'data' : s:JSON.encode({'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}),
                                        \ 'headers' : {'Content-type' : 'application/json'},
@@ -331,7 +332,6 @@ function! wandbox#compile_async(code, compiler, options)
                                        \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                                        \ })
     let g:wandbox#_async_works[-1]._tag = 'compile'
-    call s:start_polling()
 endfunction
 "}}}
 "}}}
