@@ -215,11 +215,17 @@ function! s:do_output_with_workaround()
                     \ . "call wandbox#_dump_list_results_for_autocmd_workaround()\<CR>", 'n')
     endif
     if exists('s:async_quickrun_outputs')
+        let outputs = {}
         for [key, compiler, output] in s:async_quickrun_outputs
-            let session = quickrun#session(key)
-            call session.output(output)
+            if ! has_key(outputs, key) | let outputs[key] = '' | endif
+            let outputs[key] .= "## " . compiler . "\n" . output
         endfor
         unlet s:async_quickrun_outputs
+        for [key, output] in items(outputs)
+            let session = quickrun#session(key)
+            call session.output(output)
+            call session.finish(1)
+        endfor
     endif
 endfunction
 
