@@ -247,11 +247,14 @@ function! s:polling_response()
     " clear away
     autocmd! wandbox-polling-response
     let &updatetime = s:previous_updatetime
+    unlet s:previous_updatetime
 endfunction
 
 function! wandbox#_start_polling()
-    let s:previous_updatetime = &updatetime
-    let &updatetime = g:wandbox#updatetime
+    if ! exists('s:previous_updatetime')
+        let s:previous_updatetime = &updatetime
+        let &updatetime = g:wandbox#updatetime
+    endif
     augroup wandbox-polling-response
         autocmd! CursorHold,CursorHoldI * call s:polling_response()
     augroup END
@@ -405,6 +408,7 @@ function! wandbox#abort_async_works()
     autocmd! wandbox-polling-response
     if exists('s:previous_updatetime')
         let &updatetime = s:previous_updatetime
+        unlet s:previous_updatetime
     endif
     " TODO: sweep temprary files
     let g:wandbox#_async_works = []
