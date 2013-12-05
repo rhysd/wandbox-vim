@@ -15,6 +15,10 @@ augroup wandbox-quickrun-polling
 augroup END
 
 function! s:runner.run(commands, input, session)
+    if ! wandbox#is_available(&filetype)
+        throw "No setting for Wandbox is found in the filetype: ".&filetype
+    endif
+
     let code = substitute(join(readfile(a:session.config.srcfile), "\n"), '\\', '\\\\', 'g')
     if self.config.compiler ==# ''
         let compilers = split(get(g:wandbox#default_compiler, &filetype, g:wandbox#default_compiler['-']), ',')

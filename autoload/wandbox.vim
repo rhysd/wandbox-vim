@@ -77,6 +77,10 @@ function! wandbox#_export_vital_modules()
     return [s:V, s:OptionParser, s:HTTP, s:JSON, s:List, s:Prelude]
 endfunction
 
+function! wandbox#is_available(filetype)
+    return has_key(g:wandbox#default_compiler, a:filetype)
+endfunction
+
 function! s:echo(string)
     execute g:wandbox#echo_command string(a:string)
 endfunction
