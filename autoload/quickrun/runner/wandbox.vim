@@ -3,6 +3,7 @@ set cpo&vim
 
 let [s:V, s:_, s:_, s:JSON, s:List, s:Prelude] = wandbox#_export_vital_modules() | unlet s:_
 
+" vim-quickrun runner definition {{{
 let s:runner = { 'config' : {
              \     'compiler' : '',
              \     'options' : '',
@@ -53,6 +54,12 @@ function! s:runner.sweep()
     endif
 endfunction
 
+function! quickrun#runner#wandbox#new()
+  return deepcopy(s:runner)
+endfunction
+" }}}
+
+" Polling response {{{
 function! s:is_blank(dict, key)
     if ! has_key(a:dict, a:key)
         return 1
@@ -91,10 +98,7 @@ function! s:polling_response(key)
     " XXX always passes 1
     call session.finish(1)
 endfunction
-
-function! quickrun#runner#wandbox#new()
-  return deepcopy(s:runner)
-endfunction
+"}}}
 
 let &cpo = s:save_cpo
 unlet s:save_cpo
