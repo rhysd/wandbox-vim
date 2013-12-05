@@ -134,6 +134,7 @@ augroup END
 - Make an option list prettier
 - Separate default setting and use setting
 - Output error and warning to location-list
+- Retry if request is timed out
 
 ## Libraries wandbox-vim Using
 
