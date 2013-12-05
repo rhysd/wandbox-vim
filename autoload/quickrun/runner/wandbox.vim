@@ -1,8 +1,6 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-call wandbox#touch()
-
 let [s:V, s:_, s:_, s:JSON, s:List, s:Prelude] = wandbox#_export_vital_modules() | unlet s:_
 
 let s:runner = { 'config' : {
