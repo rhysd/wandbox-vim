@@ -66,9 +66,9 @@ function! s:format_process_result(content)
          \, s:is_blank(a:content, 'program_message') ? '' : printf(" * [output]\n\n%s", a:content.program_message))
 endfunction
 
-function! s:abort(msg)
-    call session.output(a:msg)
-    call session.finish(0)
+function! s:abort(session, msg)
+    call a:session.output(a:msg)
+    call a:session.finish(0)
 endfunction
 
 function! s:polling_response(key)
@@ -82,7 +82,7 @@ function! s:polling_response(key)
     for [compiler, request] in items(filter(copy(session._work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
         let response = request.callback(request.files)
         if ! response.success
-            call s:abort('Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
+            call s:abort(session, 'Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
         endif
         let result .= '## ' . compiler . "\n" . s:format_process_result(s:JSON.decode(response.content)) . "\n"
     endfor
