@@ -410,7 +410,7 @@ endfunction
 function! s:has_vimproc()
   if !exists('s:exists_vimproc')
     try
-      silent call vimproc#version()
+      call vimproc#version()
       let s:exists_vimproc = 1
     catch
       let s:exists_vimproc = 0
