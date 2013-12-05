@@ -8,7 +8,6 @@ let s:OptionParser = s:V.import('OptionParser')
 let s:HTTP = s:V.import('Web.HTTP')
 let s:JSON = s:V.import('Web.JSON')
 let s:List = s:V.import('Data.List')
-let s:Xor128 = s:V.import('Random.Xor128')
 let s:Prelude = s:V.import('Prelude')
 "}}}
 
@@ -74,6 +73,10 @@ augroup END
 "}}}
 
 " Utility functions {{{
+function! wandbox#_export_vital_modules()
+    return [s:V, s:OptionParser, s:HTTP, s:JSON, s:List, s:Prelude]
+endfunction
+
 function! s:echo(string)
     execute g:wandbox#echo_command string(a:string)
 endfunction

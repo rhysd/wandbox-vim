@@ -3,10 +3,7 @@ set cpo&vim
 
 call wandbox#touch()
 
-let s:V = vital#of('wandbox-vim')
-let s:Prelude = s:V.import('Prelude')
-let s:JSON = s:V.import('Web.JSON')
-let s:List = s:V.import('Data.List')
+let [s:V, s:_, s:_, s:JSON, s:List, s:Prelude] = wandbox#_export_vital_modules() | unlet s:_
 
 let s:runner = { 'config' : {
              \     'compiler' : '',
