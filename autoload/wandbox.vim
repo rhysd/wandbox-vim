@@ -420,5 +420,30 @@ function! wandbox#abort_async_works()
 endfunction
 "}}}
 
+" Open Wandbox in a browser {{{
+function! s:open_browser(url)
+    if s:Prelude.is_windows()
+        s:Prelude.system('start '.a:url)
+    elseif s:Prelude.is_mac()
+        s:Prelude.system('open '.a:url)
+    elseif s:Prelude.is_unix()
+        if executable('xdg-open')
+            s:Prelude.system('xdg-open '.a:url)
+        else
+            throw "Unsupported environment."
+        endif
+    else
+        throw "Unsupported environment."
+    endif
+endfunction
+function! wandbox#open_browser()
+    if exists(':OpenBrowser')
+        OpenBrowser http://melpon.org/wandbox/
+    else
+        call s:open_browser('http://melpon.org/wandbox/')
+    endif
+endfunction
+"}}}
+
 let &cpo = s:save_cpo
 unlet s:save_cpo

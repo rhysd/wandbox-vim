@@ -8,5 +8,6 @@ command! -range=0 -nargs=* WandboxSync call wandbox#run(<count>, <q-args>, [<lin
 command! -nargs=0 WandboxOptionList call wandbox#show_option_list()
 command! -nargs=0 WandboxOptionListAsync call wandbox#show_option_list_async()
 command! -nargs=0 WandboxAbortAsyncWorks call wandbox#abort_async_works()
+command! -nargs=0 WandboxOpenBrowser call wandbox#open_browser()
 
 let g:loaded_wandbox = 1
