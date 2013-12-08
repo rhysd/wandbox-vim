@@ -53,6 +53,7 @@ if ! exists('g:wandbox#updatetime')
                   \ g:quickrun_config["_"]["runner/vimproc/updatetime"] :
                   \ 500
 endif
+let g:wandbox#disable_quickfix = get(g:, 'wandbox#disable_quickfix', 0)
 
 let s:async_works = []
 let s:is_asynchronously_executable = s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
@@ -204,7 +205,7 @@ function! s:prepare_to_output(work)
                 call s:abort('Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
             endif
             let s:async_compile_outputs = get(s:, 'async_compile_outputs', [])
-            call add(s:async_compile_outputs, [compiler, s:format_process_result(s:JSON.decode(response.content))])
+            call add(s:async_compile_outputs, [compiler, s:JSON.decode(response.content)])
         endfor
     elseif a:work._tag ==# 'list'
         let response = a:work._list.callback(a:work._list.files)
@@ -269,7 +270,7 @@ function! wandbox#run(range_given, ...)
     let [code, compilers, options] = s:prepare_args(parsed, a:range_given)
     let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1])]')
     for [compiler, output] in results
-        call s:dump_result(compiler, output)
+        call s:dump_result(compiler, s:format_process_result(output))
     endfor
 endfunction
 
@@ -284,7 +285,7 @@ function! wandbox#compile(code, compiler, options)
     if ! response.success
         throw "Request has failed! Status " . response.status . ': ' . response.statusText
     endif
-    return s:format_process_result(s:JSON.decode(response.content))
+    return s:JSON.decode(response.content)
 endfunction
 "}}}
 " Compile asynchronously {{{
@@ -304,7 +305,7 @@ function! wandbox#_dump_compile_results_for_autocmd_workaround()
         return
     endif
     for [compiler, output] in s:async_compile_outputs
-        call s:dump_result(compiler, output)
+        call s:dump_result(compiler, s:format_process_result(output))
     endfor
     unlet s:async_compile_outputs
 endfunction
