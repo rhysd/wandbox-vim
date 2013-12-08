@@ -80,7 +80,7 @@ endfunction
 
 function! s:abort(session, msg)
     call a:session.output(a:msg)
-    call a:session.finish(0)
+    call a:session.finish(1)
 endfunction
 
 function! s:polling_response(key)
@@ -103,8 +103,8 @@ function! s:polling_response(key)
     endfor
 
     call session.output(result)
-    " XXX always passes 1
-    call session.finish(1)
+    " XXX always passes 0
+    call session.finish(0)
 endfunction
 "}}}
 
