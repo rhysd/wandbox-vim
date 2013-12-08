@@ -55,7 +55,7 @@ if ! exists('g:wandbox#updatetime')
 endif
 let g:wandbox#disable_quickfix = get(g:, 'wandbox#disable_quickfix', 0)
 let g:wandbox#open_quickfix_window = get(g:, 'wandbox#open_quickfix_window', 1)
-let g:wandbox#complete_message = get(g:, 'wandbox#complete_message', 'Wandbox has completed.')
+let g:wandbox#complete_message = get(g:, 'wandbox#complete_message', 'Wandbox returned no output.')
 
 let s:async_works = []
 let s:is_asynchronously_executable = s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
@@ -144,17 +144,31 @@ function! s:dump_result(compiler, result)
     call s:echo(' ')
 endfunction
 
+function! s:echo_complete_message(no_compiler_msg, no_program_msg)
+    if ! (a:no_compiler_msg || g:wandbox#open_quickfix_window)
+        echohl ErrorMsg | echomsg "Wandbox returned compilation error or warning." | echohl None
+    elseif a:no_compiler_msg && a:no_program_msg
+        call s:echo(g:wandbox#complete_message)
+    endif
+endfunction
+
 " @param: results is a list of 2-elems list
 "         first elem is compiler, second elem is json result
 function! s:dump_with_quickfix(results, file, bufnr)
     let quickfix_list = []
+    let no_compiler_message = 1
+    let no_program_message = 1
     for [compiler, json] in a:results
         if has_key(json, 'compiler_message') && json.compiler_message != ''
             let message = a:file == '' ? json.compiler_message : substitute(json.compiler_message, '\%(^\|\n\)\zsprog\.cc', wandbox#_escape_backslash(a:file), 'g')
             let quickfix_list += ['## '.compiler] + split(message, "\n") + ["\n"]
+            let no_compiler_message = 0
         endif
     endfor
-    if quickfix_list != []
+    if quickfix_list == []
+        " Clear quickfix list
+        call setqflist([])
+    else
         if a:file == ''
             call setqflist(map(quickfix_list, '{"bufnr" : a:bufnr, "text" : v:val}'))
         else
@@ -167,12 +181,13 @@ function! s:dump_with_quickfix(results, file, bufnr)
     syntax match wandboxCompilerName /## .\+$/ containedin=all
     highlight def link wandboxCompilerName Constant
     redraw!
-    call s:echo(g:wandbox#complete_message)
     for [compiler, json] in a:results
         if has_key(json, 'program_message') && json.program_message != ''
             call s:dump_result(compiler, json.program_message)
+            let no_program_message = 0
         endif
     endfor
+    call s:echo_complete_message(no_compiler_message, no_program_message)
 endfunction
 
 function! s:filetype(parsed)
