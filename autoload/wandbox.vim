@@ -138,6 +138,28 @@ function! s:dump_result(compiler, result)
     call s:echo(' ')
 endfunction
 
+" @param: results is a list of 2-elems list
+"         first elem is compiler, second elem is json result
+function! s:dump_with_quickfix(results)
+    cgetexpr []
+    let quickfix_list = []
+    for [compiler, json] in a:results
+        if has_key(json, 'compiler_message') && json.compiler_message != ''
+            let quickfix_list += ['## '.compiler] + split(json.compiler_message, "\n") + ["\n"]
+        endif
+    endfor
+    if quickfix_list != []
+        cgetexpr quickfix_list
+        copen
+    endif
+    redraw!
+    for [compiler, json] in a:results
+        if has_key(json, 'program_message') && json.program_message != ''
+            call s:dump_result(compiler, json.program_message)
+        endif
+    endfor
+endfunction
+
 function! s:filetype(parsed)
     return has_key(a:parsed, 'filetype') ? a:parsed.filetype : &filetype
 endfunction
@@ -269,9 +291,13 @@ function! wandbox#run(range_given, ...)
     if parsed == {} | return | endif
     let [code, compilers, options] = s:prepare_args(parsed, a:range_given)
     let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1])]')
-    for [compiler, output] in results
-        call s:dump_result(compiler, s:format_process_result(output))
-    endfor
+    if g:wandbox#disable_quickfix
+        for [compiler, json_result] in results
+            call s:dump_result(compiler, s:format_process_result(json_result))
+        endfor
+    else
+        call s:dump_with_quickfix(results)
+    endif
 endfunction
 
 function! wandbox#compile(code, compiler, options)
