@@ -151,6 +151,8 @@ function! s:dump_with_quickfix(results)
         cgetexpr quickfix_list
         copen
     endif
+    syntax match wandboxCompilerName /## .\+$/ containedin=all
+    highlight def link wandboxCompilerName Constant
     redraw!
     for [compiler, json] in a:results
         if has_key(json, 'program_message') && json.program_message != ''
