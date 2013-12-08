@@ -140,15 +140,20 @@ endfunction
 
 " @param: results is a list of 2-elems list
 "         first elem is compiler, second elem is json result
-function! s:dump_with_quickfix(results, file)
+function! s:dump_with_quickfix(results, file, bufnr)
     let quickfix_list = []
     for [compiler, json] in a:results
         if has_key(json, 'compiler_message') && json.compiler_message != ''
-            let quickfix_list += ['## '.compiler] + split(substitute(json.compiler_message, '\%(^\|\n\)\zsprog\.cc', a:file, 'g'), "\n") + ["\n"]
+            let message = a:file == '' ? json.compiler_message : substitute(json.compiler_message, '\%(^\|\n\)\zsprog\.cc', a:file, 'g')
+            let quickfix_list += ['## '.compiler] + split(message, "\n") + ["\n"]
         endif
     endfor
     if quickfix_list != []
-        cgetexpr quickfix_list
+        if a:file == ''
+            call setqflist(map(quickfix_list, '{"bufnr" : a:bufnr, "text" : v:val}'))
+        else
+            cgetexpr quickfix_list
+        endif
         copen
     endif
     syntax match wandboxCompilerName /## .\+$/ containedin=all
@@ -222,7 +227,7 @@ endfunction
 function! s:prepare_to_output(work)
     let a:work._completed = 1
     if a:work._tag ==# 'compile'
-        let s:async_compile_file = expand('%:p')
+        let s:async_compile_info = {'file' : expand('%:p'), 'bufnr' : bufnr('%')}
         for [compiler, request] in items(filter(copy(a:work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
             let response = request.callback(request.files)
             if ! response.success
@@ -242,7 +247,7 @@ function! s:prepare_to_output(work)
 endfunction
 
 function! s:do_output_with_workaround()
-    if exists('s:async_compile_outputs') && exists('s:async_compile_file')
+    if exists('s:async_compile_outputs') && exists('s:async_compile_info')
         silent call feedkeys((mode() =~# '[iR]' ? "\<C-o>:" : ":\<C-u>")
                     \ . "call wandbox#_dump_compile_results_for_autocmd_workaround()\<CR>", 'n')
     endif
@@ -298,7 +303,7 @@ function! wandbox#run(range_given, ...)
             call s:dump_result(compiler, s:format_process_result(json_result))
         endfor
     else
-        call s:dump_with_quickfix(results, expand('%:p'))
+        call s:dump_with_quickfix(results, expand('%:p'), bufnr('%'))
     endif
 endfunction
 
@@ -329,7 +334,7 @@ function! wandbox#run_async(range_given, ...)
 endfunction
 
 function! wandbox#_dump_compile_results_for_autocmd_workaround()
-    if ! exists('s:async_compile_outputs') || ! exists('s:async_compile_file')
+    if ! exists('s:async_compile_outputs') || ! exists('s:async_compile_info')
         return
     endif
     if g:wandbox#disable_quickfix
@@ -337,10 +342,10 @@ function! wandbox#_dump_compile_results_for_autocmd_workaround()
             call s:dump_result(compiler, s:format_process_result(output))
         endfor
     else
-        call s:dump_with_quickfix(s:async_compile_outputs, s:async_compile_file)
+        call s:dump_with_quickfix(s:async_compile_outputs, s:async_compile_info.file, s:async_compile_info.bufnr)
     endif
     unlet s:async_compile_outputs
-    unlet s:async_compile_file
+    unlet s:async_compile_info
 endfunction
 
 function! wandbox#compile_async(code, compiler, options, work)
@@ -450,7 +455,7 @@ function! wandbox#abort_async_works()
     " TODO: sweep temprary files
     let s:async_works = []
     unlet! s:async_compile_outputs
-    unlet! s:async_compile_file
+    unlet! s:async_compile_info
     unlet! s:async_list_outputs
 endfunction
 "}}}
