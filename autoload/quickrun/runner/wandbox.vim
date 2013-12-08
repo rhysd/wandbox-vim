@@ -71,9 +71,9 @@ function! s:is_blank(dict, key)
     return empty(a:dict[a:key])
 endfunction
 
-function! s:format_process_result(content)
+function! s:format_process_result(content, file)
     return printf("%s\n%s"
-         \, s:is_blank(a:content, 'compiler_message') ? '' : printf(" * [compiler]\n\n%s", a:content.compiler_message)
+         \, s:is_blank(a:content, 'compiler_message') ? '' : printf(" * [compiler]\n\n%s", substitute(a:content.compiler_message, 'prog\.cc', a:file, 'g'))
          \, s:is_blank(a:content, 'program_message') ? '' : printf(" * [output]\n\n%s", a:content.program_message))
 endfunction
 
@@ -95,7 +95,7 @@ function! s:polling_response(key)
         if ! response.success
             call s:abort(session, 'Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
         endif
-        let result .= '## ' . compiler . "\n" . s:format_process_result(s:JSON.decode(response.content)) . "\n"
+        let result .= '## ' . compiler . "\n" . s:format_process_result(s:JSON.decode(response.content), session.config.srcfile) . "\n"
     endfor
 
     call session.output(result)
