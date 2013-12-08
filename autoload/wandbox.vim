@@ -141,7 +141,6 @@ endfunction
 " @param: results is a list of 2-elems list
 "         first elem is compiler, second elem is json result
 function! s:dump_with_quickfix(results)
-    cgetexpr []
     let quickfix_list = []
     for [compiler, json] in a:results
         if has_key(json, 'compiler_message') && json.compiler_message != ''
@@ -330,9 +329,13 @@ function! wandbox#_dump_compile_results_for_autocmd_workaround()
     if ! exists('s:async_compile_outputs')
         return
     endif
-    for [compiler, output] in s:async_compile_outputs
-        call s:dump_result(compiler, s:format_process_result(output))
-    endfor
+    if g:wandbox#disable_quickfix
+        for [compiler, output] in s:async_compile_outputs
+            call s:dump_result(compiler, s:format_process_result(output))
+        endfor
+    else
+        call s:dump_with_quickfix(s:async_compile_outputs)
+    endif
     unlet s:async_compile_outputs
 endfunction
 
