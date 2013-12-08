@@ -76,6 +76,10 @@ augroup END
 "}}}
 
 " Utility functions {{{
+function! wandbox#_escape_backslash(str)
+    return substitute(a:str, '\', s:Prelude.is_windows() ? '/' : '\\\\', 'g')
+endfunction
+
 function! wandbox#_export_vital_modules()
     return [s:V, s:OptionParser, s:HTTP, s:JSON, s:List, s:Prelude]
 endfunction
@@ -124,7 +128,7 @@ function! s:get_code(range, range_given, ...)
         let range = a:range_given ? a:range : [1, line('$')]
         let buf = join(getline(range[0], range[1]), "\n")."\n"
     endif
-    return substitute(buf, '\\', '\\\\', 'g')
+    return substitute(buf, '\', '\\\\', 'g')
 endfunction
 
 function! s:dump_result(compiler, result)
@@ -146,7 +150,7 @@ function! s:dump_with_quickfix(results, file, bufnr)
     let quickfix_list = []
     for [compiler, json] in a:results
         if has_key(json, 'compiler_message') && json.compiler_message != ''
-            let message = a:file == '' ? json.compiler_message : substitute(json.compiler_message, '\%(^\|\n\)\zsprog\.cc', a:file, 'g')
+            let message = a:file == '' ? json.compiler_message : substitute(json.compiler_message, '\%(^\|\n\)\zsprog\.cc', wandbox#_escape_backslash(a:file), 'g')
             let quickfix_list += ['## '.compiler] + split(message, "\n") + ["\n"]
         endif
     endfor

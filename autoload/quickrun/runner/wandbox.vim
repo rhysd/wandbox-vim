@@ -74,7 +74,7 @@ endfunction
 
 function! s:format_process_result(content, file)
     return printf("%s\n%s"
-         \, s:is_blank(a:content, 'compiler_message') ? '' : printf(" * [compiler]\n\n%s", substitute(a:content.compiler_message, 'prog\.cc', a:file, 'g'))
+         \, s:is_blank(a:content, 'compiler_message') ? '' : printf(" * [compiler]\n\n%s", substitute(a:content.compiler_message, 'prog\.cc', wandbox#_escape_backslash(a:file), 'g'))
          \, s:is_blank(a:content, 'program_message') ? '' : printf(" * [output]\n\n%s", a:content.program_message))
 endfunction
 
