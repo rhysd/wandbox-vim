@@ -8,6 +8,7 @@ let s:runner = { 'config' : {
              \     'compiler' : '',
              \     'options' : '',
              \     'updatetime' : g:wandbox#updatetime,
+             \     'enable_output_every_polling' : 0,
              \   }
              \ }
 
@@ -85,6 +86,9 @@ endfunction
 function! s:polling_response(key)
     let session = quickrun#session(a:key)
     if ! wandbox#_shinchoku_doudesuka(session._work)
+        if session.runner.config.enable_output_every_polling
+            call session.output('')
+        endif
         call feedkeys(mode() =~# '[iR]' ? "\<C-g>\<ESC>" : "g\<ESC>", 'n')
         return
     endif
