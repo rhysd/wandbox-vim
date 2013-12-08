@@ -55,6 +55,7 @@ if ! exists('g:wandbox#updatetime')
 endif
 let g:wandbox#disable_quickfix = get(g:, 'wandbox#disable_quickfix', 0)
 let g:wandbox#open_quickfix_window = get(g:, 'wandbox#open_quickfix_window', 1)
+let g:wandbox#complete_message = get(g:, 'wandbox#complete_message', 'Wandbox has completed.')
 
 let s:async_works = []
 let s:is_asynchronously_executable = s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
@@ -162,6 +163,7 @@ function! s:dump_with_quickfix(results, file, bufnr)
     syntax match wandboxCompilerName /## .\+$/ containedin=all
     highlight def link wandboxCompilerName Constant
     redraw!
+    call s:echo(g:wandbox#complete_message)
     for [compiler, json] in a:results
         if has_key(json, 'program_message') && json.program_message != ''
             call s:dump_result(compiler, json.program_message)
