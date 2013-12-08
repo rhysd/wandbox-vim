@@ -30,6 +30,8 @@ If `[range]` is omitted, whole buffer would be selected.
 
 To send requests asynchronously, `curl` or `wget` command and [vimproc](https://github.com/Shougo/vimproc.vim) are required. Otherwise, requests are sent synchronously and they will block Vim.
 
+The compile time messages (warnings, errors) are output to a quickfix window and the program output messages are output to a message window.
+
 ## Example
 
 Execute the buffer with default compiler and options.
