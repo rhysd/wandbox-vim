@@ -54,6 +54,7 @@ if ! exists('g:wandbox#updatetime')
                   \ 500
 endif
 let g:wandbox#disable_quickfix = get(g:, 'wandbox#disable_quickfix', 0)
+let g:wandbox#open_quickfix_window = get(g:, 'wandbox#open_quickfix_window', 1)
 
 let s:async_works = []
 let s:is_asynchronously_executable = s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
@@ -154,7 +155,9 @@ function! s:dump_with_quickfix(results, file, bufnr)
         else
             cgetexpr quickfix_list
         endif
-        copen
+        if g:wandbox#open_quickfix_window
+            copen
+        endif
     endif
     syntax match wandboxCompilerName /## .\+$/ containedin=all
     highlight def link wandboxCompilerName Constant
