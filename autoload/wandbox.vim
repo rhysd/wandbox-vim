@@ -170,7 +170,7 @@ function! s:dump_with_quickfix(results, file, bufnr)
         call setqflist([])
     else
         if a:file == ''
-            call setqflist(map(quickfix_list, '{"bufnr" : a:bufnr, "text" : v:val}'))
+            call setqflist(map(quickfix_list, '{"bufnr" : a:bufnr, "filename" : a:file, "text" : v:val}'))
         else
             cgetexpr quickfix_list
         endif
