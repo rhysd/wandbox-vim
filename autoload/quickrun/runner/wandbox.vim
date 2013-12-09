@@ -94,17 +94,19 @@ function! s:polling_response(key)
     endif
 
     let result = ''
+    let exit_status = 0
     for [compiler, request] in items(filter(copy(session._work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
         let response = request.callback(request.files)
         if ! response.success
             call s:abort(session, 'Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
         endif
-        let result .= '## ' . compiler . "\n" . s:format_process_result(s:JSON.decode(response.content), session.config.srcfile) . "\n"
+        let json_response = s:JSON.decode(response.content)
+        let result .= '## ' . compiler . "\n" . s:format_process_result(json_response, session.config.srcfile) . "\n"
+        let exit_status = exit_status || (json_response.status != 0)
     endfor
 
     call session.output(result)
-    " XXX always passes 0
-    call session.finish(0)
+    call session.finish(exit_status)
 endfunction
 "}}}
 
