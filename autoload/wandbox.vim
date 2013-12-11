@@ -145,7 +145,6 @@ function! s:get_code(range, range_given, ...)
     if g:wandbox#expand_included_files
         call s:expand_included_files(buf)
     endif
-    let g:tmp = buf
     return substitute(join(buf, "\n"), '\', '\\\\', 'g')
 endfunction
 
