@@ -203,6 +203,12 @@ function! s:dump_with_quickfix(results, file, bufnr)
             call s:dump_result(compiler, json.program_message)
             let no_program_message = 0
         endif
+        if has_key(json, 'signal')
+            echohl ErrorMsg
+            call s:echo(json.signal)
+            echohl None
+            let no_program_message = 0
+        endif
     endfor
     call s:echo_complete_message(no_compiler_message, no_program_message)
 endfunction
