@@ -130,7 +130,6 @@ augroup END
 - Unite interface for compilers
 - Persistent caching for options which would be used in quickrun type generation and unite interface
 - `doc/wandbox.txt`
-- Automatically expand `#include ""`
 - Execute remote Gist code
 - No plugin is allowed to have no test
 - Make an option list prettier

@@ -56,6 +56,7 @@ endif
 let g:wandbox#disable_quickfix = get(g:, 'wandbox#disable_quickfix', 0)
 let g:wandbox#open_quickfix_window = get(g:, 'wandbox#open_quickfix_window', 1)
 let g:wandbox#complete_message = get(g:, 'wandbox#complete_message', 'Wandbox returned no output.')
+let g:wandbox#expand_included_files = get(g:, 'wandbox#expand_included_files', 1)
 
 let s:async_works = []
 let s:is_asynchronously_executable = s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
@@ -119,16 +120,33 @@ function! s:format_process_result(content)
          \, s:is_blank(a:content, 'program_message') ? '' : printf(" * [output]\n\n%s", a:content.program_message))
 endfunction
 
+function! s:expand_included_files(buf)
+    for [line, idx] in s:List.with_index(a:buf)
+        let included = matchstr(line, '^\s*#\s*include\s\+"\zs[^"]\+\ze"')
+        if included !=# ''
+            let included_path = expand('%:p:h') . '/' . included
+            if filereadable(included_path)
+                call remove(a:buf, idx)
+                call extend(a:buf, readfile(included_path), idx)
+            endif
+        endif
+    endfor
+endfunction
+
 function! s:get_code(range, range_given, ...)
     if a:0 > 0
-        let buf = join(a:range_given ?
-                        \ readfile(a:1)[a:range[0]-1:a:range[1]-1] :
-                        \ readfile(a:1), "\n")
+        let buf = a:range_given ?
+                    \ readfile(a:1)[a:range[0]-1:a:range[1]-1] :
+                    \ readfile(a:1)
     else
         let range = a:range_given ? a:range : [1, line('$')]
-        let buf = join(getline(range[0], range[1]), "\n")."\n"
+        let buf = getline(range[0], range[1]) + ["\n"]
     endif
-    return substitute(buf, '\', '\\\\', 'g')
+    if g:wandbox#expand_included_files
+        call s:expand_included_files(buf)
+    endif
+    let g:tmp = buf
+    return substitute(join(buf, "\n"), '\', '\\\\', 'g')
 endfunction
 
 function! s:dump_result(compiler, result)
