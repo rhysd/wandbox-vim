@@ -166,6 +166,8 @@ function! s:echo_complete_message(no_compiler_msg, no_program_msg)
         echohl ErrorMsg | echomsg "Wandbox returned compilation error or warning." | echohl None
     elseif a:no_compiler_msg && a:no_program_msg
         call s:echo(g:wandbox#complete_message)
+    else
+        " Do nothing
     endif
 endfunction
 
@@ -204,9 +206,7 @@ function! s:dump_with_quickfix(results, file, bufnr)
             let no_program_message = 0
         endif
         if has_key(json, 'signal')
-            echohl ErrorMsg
-            call s:echo(json.signal)
-            echohl None
+            echohl ErrorMsg | call s:echo(json.signal) | echohl None
             let no_program_message = 0
         endif
     endfor
