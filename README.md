@@ -28,6 +28,8 @@ If `[range]` is omitted, whole buffer would be selected.
 
 `[--file={file}]` specifies the file to execute. If it is omitted, a current buffer will be executed.
 
+
+Files included with relative paths in a source are expand automatically.
 To send requests asynchronously, `curl` or `wget` command and [vimproc](https://github.com/Shougo/vimproc.vim) are required. Otherwise, requests are sent synchronously and they will block Vim.
 
 The compile time messages (warnings, errors) are output to a quickfix window and the program output messages are output to a message window.
