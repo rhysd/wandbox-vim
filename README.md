@@ -123,7 +123,7 @@ augroup wandbox-settings
 augroup END
 ```
 
-## TODO
+## (Maybe) To Do
 
 - Better command interface
 - Unite interface for compiler options
@@ -134,7 +134,7 @@ augroup END
 - Execute remote Gist code
 - No plugin is allowed to have no test
 - Make an option list prettier
-- Separate default setting and use setting
+- Separate default setting and user setting
 - Output error and warning to location-list
 - Retry if request is timed out
 
