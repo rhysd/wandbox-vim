@@ -57,6 +57,7 @@ let g:wandbox#disable_quickfix = get(g:, 'wandbox#disable_quickfix', 0)
 let g:wandbox#open_quickfix_window = get(g:, 'wandbox#open_quickfix_window', 1)
 let g:wandbox#complete_message = get(g:, 'wandbox#complete_message', 'Wandbox returned no output.')
 let g:wandbox#expand_included_files = get(g:, 'wandbox#expand_included_files', 1)
+let g:wandbox#default_extra_options = get(g:, 'wandbox#default_extra_options', {})
 
 let s:async_works = []
 let s:is_asynchronously_executable = s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
@@ -355,9 +356,13 @@ function! wandbox#run(range_given, ...)
 endfunction
 
 function! wandbox#compile(code, compiler, options)
+    let data = {'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}
+    if has_key(g:wandbox#default_extra_options, a:compiler)
+        let data['compiler-option-raw'] = g:wandbox#default_extra_options[a:compiler]
+    endif
     let response = s:HTTP.request({
                 \ 'url' : 'http://melpon.org/wandbox/api/compile.json',
-                \ 'data' : s:JSON.encode({'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}),
+                \ 'data' : s:JSON.encode(data),
                 \ 'headers' : {'Content-type' : 'application/json'},
                 \ 'method' : 'POST',
                 \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
@@ -396,9 +401,13 @@ function! wandbox#_dump_compile_results_for_autocmd_workaround()
 endfunction
 
 function! wandbox#compile_async(code, compiler, options, work)
+    let data = {'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}
+    if has_key(g:wandbox#default_extra_options, a:compiler)
+        let data['compiler-option-raw'] = g:wandbox#default_extra_options[a:compiler]
+    endif
     let a:work[a:compiler] = s:HTTP.request_async({
                                        \ 'url' : 'http://melpon.org/wandbox/api/compile.json',
-                                       \ 'data' : s:JSON.encode({'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}),
+                                       \ 'data' : s:JSON.encode(data),
                                        \ 'headers' : {'Content-type' : 'application/json'},
                                        \ 'method' : 'POST',
                                        \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
