@@ -69,6 +69,7 @@ let s:option_parser = s:OptionParser.new()
                                    \.on('--options=VAL', '-o', 'Comma separated options (like "warning,gnu++1y"')
                                    \.on('--file=VAL', '-f', 'File name to execute')
                                    \.on('--filetype=VAL', 'Filetype with which Wandbox executes')
+                                   \.on('--runtime-options', '-r', 'Input runtime program options')
                                    \.on('--puff-puff', '???')
 "}}}
 
@@ -230,7 +231,13 @@ function! s:prepare_args(parsed, range_given)
     if len(options) == 1
         let options = repeat(options, len(compilers))
     endif
-    return [code, compilers, options]
+    if has_key(a:parsed, 'runtime-options')
+        " XXX Replace white spaces except for spaces in quoted strings
+        let runtime_options = input('Input runtime program options: ')
+    else
+        let runtime_options = ''
+    endif
+    return [code, compilers, options, runtime_options]
 endfunction
 "}}}
 
@@ -344,8 +351,8 @@ endfunction
 function! wandbox#run(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options] = s:prepare_args(parsed, a:range_given)
-    let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1])]')
+    let [code, compilers, options, runtime_options] = s:prepare_args(parsed, a:range_given)
+    let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1], runtime_options)]')
     if g:wandbox#disable_quickfix
         for [compiler, json_result] in results
             call s:dump_result(compiler, s:format_process_result(json_result))
@@ -355,10 +362,13 @@ function! wandbox#run(range_given, ...)
     endif
 endfunction
 
-function! wandbox#compile(code, compiler, options)
+function! wandbox#compile(code, compiler, options, runtime_options)
     let data = {'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}
     if has_key(g:wandbox#default_extra_options, a:compiler)
         let data['compiler-option-raw'] = g:wandbox#default_extra_options[a:compiler]
+    endif
+    if a:runtime_options != ''
+        let data['runtime-option-raw'] = a:runtime_options
     endif
     let response = s:HTTP.request({
                 \ 'url' : 'http://melpon.org/wandbox/api/compile.json',
@@ -377,10 +387,10 @@ endfunction
 function! wandbox#run_async(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options] = s:prepare_args(parsed, a:range_given)
+    let [code, compilers, options, runtime_options] = s:prepare_args(parsed, a:range_given)
     call add(s:async_works, {})
     for [compiler, option] in s:List.zip(compilers, options)
-        call wandbox#compile_async(code, compiler, option, s:async_works[-1])
+        call wandbox#compile_async(code, compiler, option, runtime_options, s:async_works[-1])
     endfor
     call s:start_polling()
 endfunction
@@ -400,10 +410,14 @@ function! wandbox#_dump_compile_results_for_autocmd_workaround()
     unlet s:async_compile_info
 endfunction
 
-function! wandbox#compile_async(code, compiler, options, work)
+function! wandbox#compile_async(code, compiler, options, runtime_options, work)
     let data = {'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}
     if has_key(g:wandbox#default_extra_options, a:compiler)
-        let data['compiler-option-raw'] = g:wandbox#default_extra_options[a:compiler]
+        let data['compiler-option-raw'] = substitute(g:wandbox#default_extra_options[a:compiler], '\s\+', "\n", 'g')
+    endif
+    if a:runtime_options != ''
+        " XXX Replace white spaces except for spaces in quoted strings
+        let data['runtime-option-raw'] = substitute(a:runtime_options, '\s\+', "\n", 'g')
     endif
     let a:work[a:compiler] = s:HTTP.request_async({
                                        \ 'url' : 'http://melpon.org/wandbox/api/compile.json',
