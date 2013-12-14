@@ -94,18 +94,29 @@ You can set the default compiler and default options for each filetype by `g:wan
 
 ```vim
 " Set default compilers for each filetype
+if ! exists('g:wandbox#default_compiler')
+    let g:wandbox#default_compiler = {}
+endif
 let g:wandbox#default_compiler = {
 \   'cpp' : 'clang-head',
 \   'ruby' : 'ruby-1.9.3-p0',
 \ }
 
 " Set default options for each filetype.  Type of value is string or list of string
+if ! exists('g:wandbox#default_options')
+    let g:wandbox#default_options = {}
+endif
 let g:wandbox#default_options = {
 \   'cpp' : 'warning,optimize,boost-1.55',
 \   'haskell' : [
 \     'haskell-warning',
 \     'haskell-optimize',
 \   ],
+\ }
+
+" Set extra options for compilers if you need
+let g:wandbox#default_extra_options = {
+\   'clang-head' : '-O3 -Werror',
 \ }
 ```
 
