@@ -161,6 +161,16 @@ wandbox-vim is standing on the shoulders of below libraries.
 - Vital.Prelude
 - vim-prettyprint
 
+## References
+
+- Wandbox
+
+http://melpon.org/wandbox/
+
+- Wandbox API
+
+https://github.com/melpon/wandbox/blob/master/kennel/API.rst
+
 ## License
 
 Copyright (c) 2013 rhysd
