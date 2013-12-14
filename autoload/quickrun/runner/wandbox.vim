@@ -7,6 +7,7 @@ let [s:V, s:_, s:_, s:JSON, s:List, s:Prelude] = wandbox#_export_vital_modules()
 let s:runner = { 'config' : {
              \     'compiler' : '',
              \     'options' : '',
+             \     'runtime_options' : '',
              \     'updatetime' : g:wandbox#updatetime,
              \     'enable_output_every_polling' : 0,
              \   }
@@ -43,7 +44,7 @@ function! s:runner.run(commands, input, session)
     endif
 
     for [compiler, option] in s:List.zip(compilers, options)
-        call wandbox#compile_async(code, compiler, option, a:session._work)
+        call wandbox#compile_async(code, compiler, option, self.config.runtime_options, a:session._work)
     endfor
 
     let key = a:session.continue()
