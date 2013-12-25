@@ -282,7 +282,7 @@ endfunction
 function! s:prepare_to_output(work)
     let a:work._completed = 1
     if a:work._tag ==# 'compile'
-        let s:async_compile_info = {'file' : expand('%:p'), 'bufnr' : bufnr('%')}
+        let s:async_compile_info = {'file' : expand('%:p'), 'bufnr' : a:work._bufnr}
         for [compiler, request] in items(filter(copy(a:work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
             let response = request.callback(request.files)
             if ! response.success
@@ -427,6 +427,7 @@ function! wandbox#compile_async(code, compiler, options, runtime_options, work)
                                        \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                                        \ })
     let a:work._tag = 'compile'
+    let a:work._bufnr = bufnr('%')
 endfunction
 "}}}
 "}}}
