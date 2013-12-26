@@ -29,6 +29,10 @@ call extend(g:wandbox#default_compiler, {
             \ 'perl' : 'perl-5.19.2',
             \ 'haskell' : 'ghc-7.6.3',
             \ 'd' : 'gdc-head',
+            \ 'lazyk' : 'lazyk',
+            \ 'rust' : 'rust-head',
+            \ 'lisp' : 'clisp-2.49.0',
+            \ 'pascal' : 'fpc-2.6.2',
             \ }, 'keep')
 
 if exists('g:wandbox#default_options')
