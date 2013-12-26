@@ -70,6 +70,7 @@ let s:option_parser = s:OptionParser.new()
                                    \.on('--file=VAL', '-f', 'File name to execute')
                                    \.on('--filetype=VAL', 'Filetype with which Wandbox executes')
                                    \.on('--runtime-options', '-r', 'Input runtime program options')
+                                   \.on('--stdin=VAL', '-s', 'Stdin to the program')
                                    \.on('--puff-puff', '???')
 "}}}
 
@@ -237,7 +238,16 @@ function! s:prepare_args(parsed, range_given)
     else
         let runtime_options = ''
     endif
-    return [code, compilers, options, runtime_options]
+    if has_key(a:parsed, 'stdin')
+        if (s:Prelude.is_number(a:parsed.stdin) && a:parsed.stdin == 1) || a:parsed.stdin ==# 'input'
+            let stdin = input('Enter stdin: ')
+        elseif a:parsed.stdin =~# '^g:.\+'
+            let stdin = {a:parsed.stdin}
+        endif
+    else
+        let stdin = ''
+    endif
+    return [code, compilers, options, runtime_options, stdin]
 endfunction
 "}}}
 
@@ -351,8 +361,8 @@ endfunction
 function! wandbox#run(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options, runtime_options] = s:prepare_args(parsed, a:range_given)
-    let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1], runtime_options)]')
+    let [code, compilers, options, runtime_options, stdin] = s:prepare_args(parsed, a:range_given)
+    let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1], runtime_options, stdin)]')
     if g:wandbox#disable_quickfix
         for [compiler, json_result] in results
             call s:dump_result(compiler, s:format_process_result(json_result))
@@ -362,13 +372,16 @@ function! wandbox#run(range_given, ...)
     endif
 endfunction
 
-function! wandbox#compile(code, compiler, options, runtime_options)
+function! wandbox#compile(code, compiler, options, runtime_options, stdin)
     let data = {'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}
     if has_key(g:wandbox#default_extra_options, a:compiler)
         let data['compiler-option-raw'] = g:wandbox#default_extra_options[a:compiler]
     endif
     if a:runtime_options != ''
         let data['runtime-option-raw'] = a:runtime_options
+    endif
+    if a:stdin != ''
+        let data['stdin'] = a:stdin
     endif
     let response = s:HTTP.request({
                 \ 'url' : 'http://melpon.org/wandbox/api/compile.json',
@@ -387,10 +400,10 @@ endfunction
 function! wandbox#run_async(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options, runtime_options] = s:prepare_args(parsed, a:range_given)
+    let [code, compilers, options, runtime_options, stdin] = s:prepare_args(parsed, a:range_given)
     call add(s:async_works, {})
     for [compiler, option] in s:List.zip(compilers, options)
-        call wandbox#compile_async(code, compiler, option, runtime_options, s:async_works[-1])
+        call wandbox#compile_async(code, compiler, option, runtime_options, stdin, s:async_works[-1])
     endfor
     call s:start_polling()
 endfunction
@@ -410,7 +423,7 @@ function! wandbox#_dump_compile_results_for_autocmd_workaround()
     unlet s:async_compile_info
 endfunction
 
-function! wandbox#compile_async(code, compiler, options, runtime_options, work)
+function! wandbox#compile_async(code, compiler, options, runtime_options, stdin, work)
     let data = {'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}
     if has_key(g:wandbox#default_extra_options, a:compiler)
         let data['compiler-option-raw'] = substitute(g:wandbox#default_extra_options[a:compiler], '\s\+', "\n", 'g')
@@ -418,6 +431,9 @@ function! wandbox#compile_async(code, compiler, options, runtime_options, work)
     if a:runtime_options != ''
         " XXX Replace white spaces except for spaces in quoted strings
         let data['runtime-option-raw'] = substitute(a:runtime_options, '\s\+', "\n", 'g')
+    endif
+    if a:stdin != ''
+        let data.stdin = a:stdin
     endif
     let a:work[a:compiler] = s:HTTP.request_async({
                                        \ 'url' : 'http://melpon.org/wandbox/api/compile.json',

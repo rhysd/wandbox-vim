@@ -8,6 +8,7 @@ let s:runner = { 'config' : {
              \     'compiler' : '',
              \     'options' : '',
              \     'runtime_options' : '',
+             \     'stdin' : '',
              \     'updatetime' : g:wandbox#updatetime,
              \     'enable_output_every_polling' : 0,
              \   }
@@ -44,7 +45,7 @@ function! s:runner.run(commands, input, session)
     endif
 
     for [compiler, option] in s:List.zip(compilers, options)
-        call wandbox#compile_async(code, compiler, option, self.config.runtime_options, a:session._work)
+        call wandbox#compile_async(code, compiler, option, self.config.runtime_options, self.config.stdin, a:session._work)
     endfor
 
     let key = a:session.continue()
