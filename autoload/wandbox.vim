@@ -33,6 +33,7 @@ call extend(g:wandbox#default_compiler, {
             \ 'rust' : 'rust-head',
             \ 'lisp' : 'clisp-2.49.0',
             \ 'pascal' : 'fpc-2.6.2',
+            \ 'java' : 'java7-openjdk',
             \ }, 'keep')
 
 if exists('g:wandbox#default_options')
