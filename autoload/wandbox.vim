@@ -34,6 +34,7 @@ call extend(g:wandbox#default_compiler, {
             \ 'lisp' : 'clisp-2.49.0',
             \ 'pascal' : 'fpc-2.6.2',
             \ 'java' : 'java7-openjdk',
+            \ 'groovy' : 'groovy-2.2.1',
             \ }, 'keep')
 
 if exists('g:wandbox#default_options')
