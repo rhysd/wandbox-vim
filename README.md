@@ -2,7 +2,7 @@ Wandbox for vimmers
 ===================
 
 This is a Vim plugin to use [Wandbox](http://melpon.org/wandbox/) in Vim.
-You can compile and execute the current buffer with one or more compilers and display the results in Vim.
+You can compile and execute the current buffer with one or more compilers and display the results in Vim without any registration.
 Now, Wandbox can execute C, C++, C#, D, Ruby, Python, Python3, PHP, Lua, Perl, Haskell, Erlang, Bash and SQL codes.
 
 ![screenshot](https://dl.dropboxusercontent.com/u/2753138/wandbox.png)
