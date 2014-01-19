@@ -35,6 +35,9 @@ call extend(g:wandbox#default_compiler, {
             \ 'pascal' : 'fpc-2.6.2',
             \ 'java' : 'java7-openjdk',
             \ 'groovy' : 'groovy-2.2.1',
+            \ 'javascript' : 'mozjs-24.2.0',
+            \ 'javascript.node' : 'node-0.10.24',
+            \ 'coffee' : 'coffee-script-head',
             \ }, 'keep')
 
 if exists('g:wandbox#default_options')
