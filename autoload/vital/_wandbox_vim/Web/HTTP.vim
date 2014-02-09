@@ -4,13 +4,14 @@ set cpo&vim
 
 function! s:_vital_loaded(V)
   let s:V = a:V
+
   let s:Prelude = s:V.import('Prelude')
-  let s:Process = s:V.import('Process')
   let s:String = s:V.import('Data.String')
+  let s:String = s:V.import('Process')
 endfunction
 
 function! s:_vital_depends()
-  return ['Prelude', 'Data.String']
+  return ['Prelude', 'Data.String', 'Process']
 endfunction
 
 function! s:__urlencode_char(c)
@@ -151,6 +152,54 @@ function! s:request(...)
   return s:_build_response(header, content)
 endfunction
 
+function! s:request_async(...)
+  let settings = {}
+  for arg in a:000
+    if s:Prelude.is_dict(arg)
+      let settings = extend(settings, arg, 'keep')
+    elseif s:Prelude.is_string(arg)
+      if has_key(settings, 'url')
+        let settings.method = settings.url
+      endif
+      let settings.url = arg
+    endif
+    unlet arg
+  endfor
+  call extend(settings, deepcopy(s:default_settings), 'keep')
+  let settings.method = toupper(settings.method)
+  if !has_key(settings, 'url')
+    throw 'Vital.Web.HTTP.request(): "url" parameter is required.'
+  endif
+  if !s:Prelude.is_list(settings.client)
+    let settings.client = [settings.client]
+  endif
+  let client = s:_get_async_client(settings)
+  if empty(client)
+    throw 'Vital.Web.HTTP.request(): Available client not found: '
+    \    . string(settings.client)
+  endif
+  if has_key(settings, 'contentType')
+    let settings.headers['Content-Type'] = settings.contentType
+  endif
+  if has_key(settings, 'param')
+    if s:Prelude.is_dict(settings.param)
+      let getdatastr = s:encodeURI(settings.param)
+    else
+      let getdatastr = settings.param
+    endif
+    if strlen(getdatastr)
+      let settings.url .= '?' . getdatastr
+    endif
+  endif
+  if has_key(settings, 'data')
+    let settings.data = s:_postdata(settings.data)
+    let settings.headers['Content-Length'] = len(join(settings.data, "\n"))
+  endif
+  let settings._file = {}
+
+  return client.request_async(settings)
+endfunction
+
 function! s:get(url, ...)
   let settings = {
   \    'url': a:url,
@@ -251,10 +300,19 @@ function! s:_get_client(settings)
   endfor
   return {}
 endfunction
+function! s:_get_async_client(settings)
+  let candidates = a:settings.client
+  let names = s:Prelude.is_list(candidates) ? candidates : [candidates]
+  for name in names
+    if has_key(s:clients, name) && s:clients[name].available(a:settings) && has_key(s:clients[name], 'request_async')
+      return s:clients[name]
+    endif
+  endfor
+  return {}
+endfunction
 let s:clients = {}
 
 let s:clients.python = {}
-
 function! s:clients.python.available(settings)
   if !has('python')
     return 0
@@ -269,7 +327,6 @@ function! s:clients.python.available(settings)
   endif
   return 1
 endfunction
-
 function! s:clients.python.request(settings)
   " TODO: maxRedirect, retry, outputFile
   let header = ''
@@ -345,15 +402,12 @@ endpython
 endfunction
 
 let s:clients.curl = {}
-
 function! s:clients.curl.available(settings)
   return executable(self._command(a:settings))
 endfunction
-
 function! s:clients.curl._command(settings)
   return get(get(a:settings, 'command', {}), 'curl', 'curl')
 endfunction
-
 function! s:clients.curl.request(settings)
   let quote = s:_quote()
   let command = self._command(a:settings)
@@ -397,17 +451,67 @@ function! s:clients.curl.request(settings)
   endif
   return [header, content]
 endfunction
+function! s:clients.curl.request_async(settings)
+  let quote = s:_quote()
+  let command = self._command(a:settings)
+  let a:settings._file.header = tr(tempname(),'\','/')
+  let command .= ' --dump-header ' . quote . a:settings._file.header . quote
+  let has_output_file = has_key(a:settings, 'outputFile')
+  if has_output_file
+    let output_file = a:settings.outputFile
+  else
+    let output_file = tr(tempname(),'\','/')
+    let a:settings._file.content = output_file
+  endif
+  let command .= ' --output ' . quote . output_file . quote
+  let command .= ' -L -s -k -X ' . a:settings.method
+  let command .= ' --max-redirs ' . a:settings.maxRedirect
+  let command .= s:_make_header_args(a:settings.headers, '-H ', quote)
+  let timeout = get(a:settings, 'timeout', '')
+  let command .= ' --retry ' . a:settings.retry
+  if timeout =~# '^\d\+$'
+    let command .= ' --max-time ' . timeout
+  endif
+  if has_key(a:settings, 'username')
+    let auth = a:settings.username . ':' . get(a:settings, 'password', '')
+    let command .= ' --anyauth --user ' . quote . auth . quote
+  endif
+  let command .= ' ' . quote . a:settings.url . quote
+  if has_key(a:settings, 'data')
+    let a:settings._file.post = s:_make_postfile(a:settings.data)
+    let command .= ' --data-binary @' . quote . a:settings._file.post . quote
+  endif
+
+  let process =  vimproc#popen3(command)
+  let files = a:settings._file
+  let files.has_output_file = has_output_file
+  return {'process' : process, 'files' : files, 'callback' : s:clients.curl.on_complete}
+endfunction
+function! s:clients.curl.on_complete(files)
+  let headerstr = s:_readfile(a:files.header)
+  let header_chunks = split(headerstr, "\r\n\r\n")
+  let header = split(get(header_chunks, -1, ''), "\r\n")
+  if a:files.has_output_file
+    let content = ''
+  else
+    let content = s:_readfile(a:files.content)
+  endif
+
+  for file in filter(values(a:files), 's:Prelude.is_string(v:val)')
+    if filereadable(file)
+      call delete(file)
+    endif
+  endfor
+  return s:_build_response(header, content)
+endfunction
 
 let s:clients.wget = {}
-
 function! s:clients.wget.available(settings)
   return executable(self._command(a:settings))
 endfunction
-
 function! s:clients.wget._command(settings)
   return get(get(a:settings, 'command', {}), 'wget', 'wget')
 endfunction
-
 function! s:clients.wget.request(settings)
   let quote = s:_quote()
   let command = self._command(a:settings)
@@ -464,6 +568,73 @@ function! s:clients.wget.request(settings)
     let content = s:_readfile(output_file)
   endif
   return [header, content]
+endfunction
+function! s:clients.wget.request_async(settings)
+  let quote = s:_quote()
+  let command = self._command(a:settings)
+  let method = a:settings.method
+  if method ==# 'HEAD'
+    let command .= ' --spider'
+  elseif method !=# 'GET' && method !=# 'POST'
+    let a:settings.headers['X-HTTP-Method-Override'] = a:settings.method
+  endif
+  let a:settings._file.header = tr(tempname(),'\','/')
+  let command .= ' -o ' . quote . a:settings._file.header . quote
+  let has_output_file = has_key(a:settings, 'outputFile')
+  if has_output_file
+    let output_file = a:settings.outputFile
+  else
+    let output_file = tr(tempname(),'\','/')
+    let a:settings._file.content = output_file
+  endif
+  let command .= ' -O ' . quote . output_file . quote
+  let command .= ' --server-response -q -L '
+  let command .= ' --max-redirect=' . a:settings.maxRedirect
+  let command .= s:_make_header_args(a:settings.headers, '--header=', quote)
+  let timeout = get(a:settings, 'timeout', '')
+  let command .= ' --tries=' . a:settings.retry
+  if timeout =~# '^\d\+$'
+    let command .= ' --timeout=' . timeout
+  endif
+  if has_key(a:settings, 'username')
+    let command .= ' --http-user=' . quote . a:settings.username . quote
+  endif
+  if has_key(a:settings, 'password')
+    let command .= ' --http-password=' . quote . a:settings.password . quote
+  endif
+  let command .= ' ' . quote . a:settings.url . quote
+  if has_key(a:settings, 'data')
+    let a:settings._file.post = s:_make_postfile(a:settings.data)
+    let command .= ' --post-file=' . quote . a:settings._file.post . quote
+  endif
+
+  let process = vimproc#popen3(command)
+  let files = a:settings._file
+  let files.has_output_file = has_output_file
+  return {'process' : process, 'files' : files, 'callback' : s:clients.wget.on_complete}
+endfunction
+function! s:clients.wget.on_complete(files)
+  if filereadable(a:files.header)
+    let header_lines = readfile(a:files.header, 'b')
+    call map(header_lines, 'matchstr(v:val, "^\\s*\\zs.*")')
+    let headerstr = join(header_lines, "\n")
+    let header_chunks = split(headerstr, '\n\zeHTTP/1\.\d')
+    let header = split(get(header_chunks, -1, ''), "\n")
+  else
+    let header = []
+  endif
+  if a:files.has_output_file
+    let content = ''
+  else
+    let content = s:_readfile(a:files.content)
+  endif
+
+  for file in filter(values(a:files), 's:Prelude.is_string(v:val)')
+    if filereadable(file)
+      call delete(file)
+    endif
+  endfor
+  return s:_build_response(header, content)
 endfunction
 
 function! s:_quote()
