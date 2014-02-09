@@ -3,12 +3,13 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 " Import vital {{{
-let s:V = vital#of('wandbox-vim')
+let s:V = vital#of('wandbox_vim')
 let s:OptionParser = s:V.import('OptionParser')
 let s:HTTP = s:V.import('Web.HTTP')
 let s:JSON = s:V.import('Web.JSON')
 let s:List = s:V.import('Data.List')
 let s:Prelude = s:V.import('Prelude')
+let s:Process = s:V.import('Process')
 "}}}
 
 " Initialize variables {{{
@@ -69,19 +70,25 @@ let g:wandbox#expand_included_files = get(g:, 'wandbox#expand_included_files', 1
 let g:wandbox#default_extra_options = get(g:, 'wandbox#default_extra_options', {})
 
 let s:async_works = []
-let s:is_asynchronously_executable = s:Prelude.has_vimproc() && (executable('curl') || executable('wget'))
+let s:is_asynchronously_executable = s:Process.has_vimproc() && (executable('curl') || executable('wget'))
 "}}}
 
 " Option definitions {{{
 let s:option_parser = s:OptionParser.new()
-                                   \.on('--compiler=VAL', '-c', 'Comma separated compiler commands (like "gcc-head,clang-head")')
-                                   \.on('--options=VAL', '-o', 'Comma separated options (like "warning,gnu++1y"')
-                                   \.on('--file=VAL', '-f', 'File name to execute')
+                                   \.on('--compiler=VAL', 'Comma separated compiler commands (like "gcc-head,clang-head")', {'short' : '-c'})
+                                   \.on('--options=VAL', 'Comma separated options (like "warning,gnu++1y"', {'short' : '-o'})
+                                   \.on('--file=VAL', 'File name to execute', {'short' : '-f'})
                                    \.on('--filetype=VAL', 'Filetype with which Wandbox executes')
-                                   \.on('--runtime-options', '-r', 'Input runtime program options')
-                                   \.on('--stdin=VAL', '-s', 'Stdin to the program')
+                                   \.on('--runtime-options', 'Input runtime program options', {'short' : '-r', 'default' : 0})
+                                   \.on('--stdin', 'Stdin to the program', {'short' : '-s', 'default' : 0})
                                    \.on('--puff-puff', '???')
 "}}}
+
+" Complete function {{{
+function! wandbox#complete_command(arglead, cmdline, cursorpos)
+    return s:option_parser.complete(a:arglead, a:cmdline, a:cursorpos)
+endfunction
+" }}}
 
 " Initialize augroup {{{
 augroup wandbox-polling-response
@@ -230,6 +237,7 @@ function! s:filetype(parsed)
 endfunction
 
 function! s:prepare_args(parsed, range_given)
+    PP! a:000
     let code = has_key(a:parsed, 'file') ?
                 \ s:get_code(a:parsed.__range__, a:range_given, a:parsed.file) :
                 \ s:get_code(a:parsed.__range__, a:range_given)
@@ -241,13 +249,13 @@ function! s:prepare_args(parsed, range_given)
     if len(options) == 1
         let options = repeat(options, len(compilers))
     endif
-    if has_key(a:parsed, 'runtime-options')
+    if a:parsed['runtime-options']
         " XXX Replace white spaces except for spaces in quoted strings
         let runtime_options = input('Input runtime program options: ')
     else
         let runtime_options = ''
     endif
-    if has_key(a:parsed, 'stdin')
+    if a:parsed.stdin
         if (s:Prelude.is_number(a:parsed.stdin) && a:parsed.stdin == 1) || a:parsed.stdin ==# 'input'
             let stdin = input('Enter stdin: ')
         elseif a:parsed.stdin =~# '^g:.\+'

@@ -7,10 +7,11 @@ function! s:_vital_loaded(V)
 
   let s:Prelude = s:V.import('Prelude')
   let s:String = s:V.import('Data.String')
+  let s:String = s:V.import('Process')
 endfunction
 
 function! s:_vital_depends()
-  return ['Data.String', 'Prelude']
+  return ['Prelude', 'Data.String', 'Process']
 endfunction
 
 function! s:__urlencode_char(c)
@@ -438,7 +439,7 @@ function! s:clients.curl.request(settings)
     let command .= ' --data-binary @' . quote . a:settings._file.post . quote
   endif
 
-  call s:Prelude.system(command)
+  call s:Process.system(command)
 
   let headerstr = s:_readfile(a:settings._file.header)
   let header_chunks = split(headerstr, "\r\n\r\n")
@@ -550,7 +551,7 @@ function! s:clients.wget.request(settings)
     let command .= ' --post-file=' . quote . a:settings._file.post . quote
   endif
 
-  call s:Prelude.system(command)
+  call s:Process.system(command)
 
   if filereadable(a:settings._file.header)
     let header_lines = readfile(a:settings._file.header, 'b')
