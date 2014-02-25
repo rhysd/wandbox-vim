@@ -237,7 +237,6 @@ function! s:filetype(parsed)
 endfunction
 
 function! s:prepare_args(parsed, range_given)
-    PP! a:000
     let code = has_key(a:parsed, 'file') ?
                 \ s:get_code(a:parsed.__range__, a:range_given, a:parsed.file) :
                 \ s:get_code(a:parsed.__range__, a:range_given)
