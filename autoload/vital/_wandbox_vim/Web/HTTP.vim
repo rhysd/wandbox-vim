@@ -7,7 +7,7 @@ function! s:_vital_loaded(V)
 
   let s:Prelude = s:V.import('Prelude')
   let s:String = s:V.import('Data.String')
-  let s:String = s:V.import('Process')
+  let s:Process = s:V.import('Process')
 endfunction
 
 function! s:_vital_depends()
