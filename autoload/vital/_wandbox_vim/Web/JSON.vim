@@ -12,7 +12,7 @@ endfunction
 
 function! s:decode(json)
   let json = iconv(a:json, "utf-8", &encoding)
-  let json = substitute(json, '\n', '', 'g')
+  let json = join(split(json, "\n"), '')
   let json = substitute(json, '\\u34;', '\\"', 'g')
   let json = substitute(json, '\\u\(\x\x\x\x\)', '\=s:string.nr2enc_char("0x".submatch(1))', 'g')
   let [null,true,false] = [0,1,0]
