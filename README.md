@@ -170,7 +170,7 @@ http://melpon.org/wandbox/
 
 - Wandbox API
 
-https://github.com/melpon/wandbox/blob/master/kennel/API.rst
+https://github.com/melpon/wandbox/blob/master/kennel2/API.rst
 
 ## License
 
