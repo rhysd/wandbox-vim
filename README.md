@@ -1,7 +1,7 @@
 Wandbox for vimmers
 ===================
 
-This is a Vim plugin to use [Wandbox](http://melpon.org/wandbox/) in Vim.
+This is a Vim plugin to use [Wandbox](http://wandbox.org/) in Vim.
 You can compile and execute the current buffer with one or more compilers and display the results in Vim without any registration.
 Now, Wandbox can execute C, C++, C#, D, Ruby, Python, Python3, PHP, Lua, Perl, Haskell, Erlang, Bash and SQL codes.
 
@@ -9,7 +9,7 @@ Now, Wandbox can execute C, C++, C#, D, Ruby, Python, Python3, PHP, Lua, Perl, H
 
 ## What is Wandbox?
 
-[Wandbox](http://melpon.org/wandbox/) is a new and cool social compilation service mainly for C++ers.
+[Wandbox](http://wandbox.org/) is a new and cool social compilation service mainly for C++ers.
 You can use various versions of compilers and famous libraries.
 In addition, Wandbox provides some other languages like Ruby, Python, Haskell, D and so on.
 Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](https://github.com/melpon/wandbox).
@@ -153,7 +153,7 @@ augroup END
 
 ## Libraries wandbox-vim Using
 
-wandbox-vim is standing on the shoulders of below libraries.
+wandbox-vim is standing on the shoulders of below libraries (you don't need to install below by your hand).
 
 - Vital.Web.HTTP
 - Vital.Web.JSON
@@ -166,7 +166,7 @@ wandbox-vim is standing on the shoulders of below libraries.
 
 - Wandbox
 
-http://melpon.org/wandbox/
+http://wandbox.org/
 
 - Wandbox API
 
@@ -174,22 +174,22 @@ https://github.com/melpon/wandbox/blob/master/kennel2/API.rst
 
 ## License
 
-Copyright (c) 2013 rhysd
+  Copyright (c) 2013 rhysd
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
