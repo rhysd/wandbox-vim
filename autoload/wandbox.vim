@@ -400,7 +400,7 @@ function! wandbox#compile(code, compiler, options, runtime_options, stdin)
         let data['stdin'] = a:stdin
     endif
     let response = s:HTTP.request({
-                \ 'url' : 'http://melpon.org/wandbox/api/compile.json',
+                \ 'url' : 'http://wandbox.org/api/compile.json',
                 \ 'data' : s:JSON.encode(data),
                 \ 'headers' : {'Content-type' : 'application/json'},
                 \ 'method' : 'POST',
