@@ -1,7 +1,7 @@
 Wandbox for vimmers
 ===================
 
-This is a Vim plugin to use [Wandbox](http://wandbox.org/) in Vim.
+This is a Vim plugin to use [Wandbox](https://wandbox.org/) in Vim.
 You can compile and execute the current buffer with one or more compilers and display the results in Vim without any registration.
 Now, Wandbox can execute C, C++, C#, D, Ruby, Python, Python3, PHP, Lua, Perl, Haskell, Erlang, Bash and SQL codes.
 
@@ -9,7 +9,7 @@ Now, Wandbox can execute C, C++, C#, D, Ruby, Python, Python3, PHP, Lua, Perl, H
 
 ## What is Wandbox?
 
-[Wandbox](http://wandbox.org/) is a new and cool social compilation service mainly for C++ers.
+[Wandbox](https://wandbox.org/) is a new and cool social compilation service mainly for C++ers.
 You can use various versions of compilers and famous libraries.
 In addition, Wandbox provides some other languages like Ruby, Python, Haskell, D and so on.
 Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](https://github.com/melpon/wandbox).
@@ -166,7 +166,7 @@ wandbox-vim is standing on the shoulders of below libraries (you don't need to i
 
 - Wandbox
 
-http://wandbox.org/
+https://wandbox.org/
 
 - Wandbox API
 
