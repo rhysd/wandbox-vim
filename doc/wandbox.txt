@@ -4,6 +4,8 @@ Author : rhysd <lin90162@yahoo.co.jp>
 
 ==============================================================================
 
+Document for *wandbox-vim* is hosted at below link.
+
 https://github.com/rhysd/wandbox-vim/blob/master/README.md
 
 ==============================================================================

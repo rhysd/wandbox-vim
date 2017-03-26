@@ -3,7 +3,7 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 " Import vital {{{
-let s:V = vital#of('wandbox_vim')
+let s:V = vital#wandbox#new()
 let s:OptionParser = s:V.import('OptionParser')
 let s:HTTP = s:V.import('Web.HTTP')
 let s:JSON = s:V.import('Web.JSON')
