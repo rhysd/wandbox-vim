@@ -270,7 +270,13 @@ function! s:prepare_args(parsed, range_given)
             let stdin = {a:parsed.stdin}
         endif
     elseif has_key(a:parsed, 'stdin-file')
-        let stdin = join(readfile(expand(a:parsed['stdin-file']), 'b'), "\n")
+        let lines = readfile(expand(a:parsed['stdin-file']), 'b')
+        for l in lines
+            if stridx(l, "\n") >= 0
+                echohl WarningMsg | echom 'NUL character contained in input from stdin was coverted to <NL>' | echohl None
+            endif
+        endfor
+        let stdin = join(lines, "\n")
     else
         let stdin = ''
     endif
