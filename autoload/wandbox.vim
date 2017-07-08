@@ -270,7 +270,7 @@ function! s:prepare_args(parsed, range_given)
             let stdin = {a:parsed.stdin}
         endif
     elseif has_key(a:parsed, 'stdin-file')
-        let stdin = join(readfile(expand(a:parsed['stdin-file'])), '\n').'\n'
+        let stdin = join(readfile(expand(a:parsed['stdin-file']), 'b'), '\n')
     else
         let stdin = ''
     endif
