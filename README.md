@@ -17,7 +17,7 @@ Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](h
 ## Usage
 
 ```
-:[range]Wandbox [--compiler={compiler}] [--options={options}] [--file={file}] [--runtime-options]
+:[range]Wandbox [--compiler={compiler}] [--options={options}] [--file={file}] [--runtime-options] [--stdin] [--stdin-file={stdin-file}]
 ```
 
 If `[range]` is omitted, whole buffer would be selected.
@@ -29,6 +29,10 @@ If `[range]` is omitted, whole buffer would be selected.
 `[--file={file}]` specifies the file to execute. If it is omitted, a current buffer will be executed.
 
 `[--runtime-options]` specifies arguments for the program at runtime.  You can input the arguments.
+
+`[--stdin]` specifies stdin. You can input the arguments, or use global variable like `--stdin=g:stdin`.
+
+`[--stdin-file]` specifies file which will be used as stdin.
 
 Files included with relative paths in a source are expand automatically.
 To send requests asynchronously, `curl` or `wget` command and [vimproc](https://github.com/Shougo/vimproc.vim) are required. Otherwise, requests are sent synchronously and they will block Vim.
