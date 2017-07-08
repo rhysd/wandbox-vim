@@ -89,6 +89,7 @@ let s:option_parser = s:OptionParser.new()
                                    \.on('--filetype=VAL', 'Filetype with which Wandbox executes')
                                    \.on('--runtime-options', 'Input runtime program options', {'short' : '-r', 'default' : 0})
                                    \.on('--stdin', 'Stdin to the program', {'short' : '-s', 'default' : 0})
+                                   \.on('--stdin-file=VAL', 'File name which will be used as stdin', {'short' : '-S', 'completion' : 'file'})
                                    \.on('--puff-puff', '???')
 "}}}
 
@@ -268,6 +269,8 @@ function! s:prepare_args(parsed, range_given)
         elseif a:parsed.stdin =~# '^g:.\+'
             let stdin = {a:parsed.stdin}
         endif
+    elseif has_key(a:parsed, 'stdin-file')
+        let stdin = join(readfile(expand(a:parsed['stdin-file']), 'b'), '\n')
     else
         let stdin = ''
     endif
