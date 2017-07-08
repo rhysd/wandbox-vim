@@ -273,7 +273,7 @@ function! s:prepare_args(parsed, range_given)
         let lines = readfile(expand(a:parsed['stdin-file']), 'b')
         for l in lines
             if stridx(l, "\n") >= 0
-                echohl WarningMsg | echom 'NUL character contained in input from stdin was coverted to <NL>' | echohl None
+                echohl WarningMsg | echom 'NUL character contained in input from stdin was converted to <NL>' | echohl None
             endif
         endfor
         let stdin = join(lines, "\n")
@@ -572,7 +572,7 @@ function! wandbox#abort_async_works()
         let &updatetime = s:previous_updatetime
         unlet s:previous_updatetime
     endif
-    " TODO: sweep temprary files
+    " TODO: sweep temporary files
     let s:async_works = []
     unlet! s:async_compile_outputs
     unlet! s:async_compile_info
