@@ -173,7 +173,7 @@ function! s:get_code(range, range_given, ...)
     if g:wandbox#expand_included_files
         call s:expand_included_files(buf)
     endif
-    return substitute(join(buf, "\n"), '\', '\\\\', 'g')
+    return join(buf, "\n")
 endfunction
 
 function! s:dump_result(compiler, result)
