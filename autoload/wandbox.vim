@@ -305,18 +305,15 @@ endfunction
 function! wandbox#_shinchoku_doudesuka(work)
     for request in filter(copy(values(a:work)), 's:Prelude.is_dict(v:val) && ! has_key(v:val, "_exit_status")')
         let [condition, status] = request.process.checkpid()
-        if condition ==# 'exit'
-            let request._exit_status = status
+        if condition ==# 'exit' || condition ==# 'error'
+            if status == 0
+                let request._exit_status = status
+            else
+                echohl ErrorMsg | echom 'Error happened on sending request to wandbox. exit status:' . status
+                let a:work._completed = 1
+            endif
             call request.process.stdout.close()
             call request.process.stderr.close()
-        elseif condition ==# 'error'
-            let a:work._completed = 1
-            call request.process.stdout.close()
-            call request.process.stderr.close()
-            " XXX Is this OK?
-            echohl ErrorMsg
-            echomsg "Error happened while Wandbox asynchronous execution!"
-            echohl None
         endif
     endfor
     return s:List.all('type(v:val) != type({}) || has_key(v:val, "_exit_status")', a:work)
