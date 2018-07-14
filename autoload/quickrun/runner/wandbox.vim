@@ -99,7 +99,7 @@ function! s:polling_response(key)
     let exit_status = 0
     for [compiler, request] in items(filter(copy(session._work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
         let response = request.callback(request.files)
-        if ! response.success
+        if response.success != 0
             call s:abort(session, 'Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
         endif
         let json_response = s:JSON.decode(response.content)
