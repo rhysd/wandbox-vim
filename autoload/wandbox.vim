@@ -325,7 +325,7 @@ function! s:prepare_to_output(work)
         let s:async_compile_info = {'file' : expand('%:p'), 'bufnr' : a:work._bufnr}
         for [compiler, request] in items(filter(copy(a:work), 's:Prelude.is_dict(v:val) && has_key(v:val, "_exit_status")'))
             let response = request.callback(request.files)
-            if response.success != 0
+            if ! response.success
                 call s:abort('Request has failed while executing '.compiler.'!: Status '. response.status . ': ' . response.statusText)
             endif
             let s:async_compile_outputs = get(s:, 'async_compile_outputs', [])
@@ -333,7 +333,7 @@ function! s:prepare_to_output(work)
         endfor
     elseif a:work._tag ==# 'list'
         let response = a:work._list.callback(a:work._list.files)
-        if response.success != 0
+        if ! response.success
             call s:abort('Request has failed! Status while getting option list!: '. response.status . ': ' . response.statusText)
         endif
         let s:async_list_outputs = get(s:, 'async_list_outputs', [])
@@ -420,7 +420,7 @@ function! wandbox#compile(code, compiler, options, runtime_options, stdin)
                 \ 'method' : 'POST',
                 \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                 \ })
-    if response.success != 0
+    if ! response.success
         throw "Request has failed! Status " . response.status . ': ' . response.statusText
     endif
     return s:JSON.decode(response.content)
@@ -490,7 +490,7 @@ function! wandbox#list()
                 \ 'url' : 'http://melpon.org/wandbox/api/list.json',
                 \ 'client' : (g:wandbox#disable_python_client ? ['curl', 'wget'] : ['python', 'curl', 'wget']),
                 \ })
-    if response.success != 0
+    if ! response.success
         throw "Request has failed! Status " . response.status . ': ' . response.statusText
     endif
     return wandbox#prettyprint#pp(s:JSON.decode(response.content))
