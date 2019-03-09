@@ -253,7 +253,6 @@ function! s:_build_response(header, content)
 
   if !empty(a:header)
     let status_line = get(a:header, 0)
-    echom status_line
     let matched = matchlist(status_line, '^HTTP/\%(1\.\d\|2\)\s\+\(\d\+\)\s\+\(.*\)')
     if !empty(matched)
       let [status, statusText] = matched[1 : 2]
