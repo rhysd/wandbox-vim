@@ -253,7 +253,8 @@ function! s:_build_response(header, content)
 
   if !empty(a:header)
     let status_line = get(a:header, 0)
-    let matched = matchlist(status_line, '^HTTP/1\.\d\s\+\(\d\+\)\s\+\(.*\)')
+    echom status_line
+    let matched = matchlist(status_line, '^HTTP/\%(1\.\d\|2\)\s\+\(\d\+\)\s\+\(.*\)')
     if !empty(matched)
       let [status, statusText] = matched[1 : 2]
       let response.status = status - 0
@@ -557,7 +558,7 @@ function! s:clients.wget.request(settings)
     let header_lines = readfile(a:settings._file.header, 'b')
     call map(header_lines, 'matchstr(v:val, "^\\s*\\zs.*")')
     let headerstr = join(header_lines, "\n")
-    let header_chunks = split(headerstr, '\n\zeHTTP/1\.\d')
+    let header_chunks = split(headerstr, '\n\zeHTTP/\%(1\.\d\|2\)')
     let header = split(get(header_chunks, -1, ''), "\n")
   else
     let header = []
@@ -618,7 +619,7 @@ function! s:clients.wget.on_complete(files)
     let header_lines = readfile(a:files.header, 'b')
     call map(header_lines, 'matchstr(v:val, "^\\s*\\zs.*")')
     let headerstr = join(header_lines, "\n")
-    let header_chunks = split(headerstr, '\n\zeHTTP/1\.\d')
+    let header_chunks = split(headerstr, '\n\zeHTTP/\%(1\.\d\|2\)')
     let header = split(get(header_chunks, -1, ''), "\n")
   else
     let header = []
