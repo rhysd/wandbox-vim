@@ -17,7 +17,7 @@ Wandbox has been created by @melpon and @kikairoya.  Repository page is [here](h
 ## Usage
 
 ```
-:[range]Wandbox [--compiler={compiler}] [--options={options}] [--file={file}] [--runtime-options] [--stdin] [--stdin-file={stdin-file}]
+:[range]Wandbox [--compiler={compiler}] [--options={options}] [--compiler-options={options}] [--file={file}] [--runtime-options] [--stdin] [--stdin-file={stdin-file}]
 ```
 
 If `[range]` is omitted, whole buffer would be selected.
@@ -25,6 +25,8 @@ If `[range]` is omitted, whole buffer would be selected.
 `[--compiler={compiler}]` specifies a compiler like `gcc-head`, `clang-head`, `gcc-4.8.2`, `clang-3.3`... Default value is `gcc-head` for C++. See `autoload/wandbox.vim` to know default values of each filetype.  You can set multiple compilers with comma-separated string like `'gcc-head,clang-head'`.
 
 `[--options={options}]` specifies options for compilation like `warning`, `c++1y`, `boost-1.55`... This value must be comma-separated and no space is allowed like `warning,c++1y,boost-1.55`. Default value is `warning,gnu++1y,boost-1.55` for C++, 'haskell-warning' for Haskell, '' for others.  If multiple compilers are set, you can set each options for the compilers with colon-separated string like `'warning,c++11:warning,c++0x'`.  When you set single options like `'warning,c++11'` even if multiple compilers are set, all compilers uses the same option you set.
+
+`[--compiler-options={options}]` directly specifies compiler options like `-Wall`, `-std=c++17`, `-O2`... This value must be separated by backslash comma ('\,') and no space is allowed like `-Wall\,-std=c++17,\-O2`. If multiple compilers are set, you can set each options for the compilers with backslash-colon-separated string like `-Wall\,-std=c++11\:-Wall\,-std=c++17`. When you set single options even if multiple compilers are set, all compilers uses the same option you set.
 
 `[--file={file}]` specifies the file to execute. If it is omitted, a current buffer will be executed.
 
