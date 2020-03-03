@@ -85,6 +85,7 @@ let s:is_asynchronously_executable = s:Process.has_vimproc() && (executable('cur
 let s:option_parser = s:OptionParser.new()
                                    \.on('--compiler=VAL', 'Comma separated compiler commands (like "gcc-head,clang-head")', {'short' : '-c'})
                                    \.on('--options=VAL', 'Comma separated options (like "warning,gnu++1y"', {'short' : '-o'})
+                                   \.on('--compiler-options=VAL', 'Backslash comma separated compiler options (like "-O2\,-g")', {'short' : '-O'})
                                    \.on('--file=VAL', 'File name to execute', {'short' : '-f'})
                                    \.on('--filetype=VAL', 'Filetype with which Wandbox executes')
                                    \.on('--runtime-options', 'Input runtime program options', {'short' : '-r', 'default' : 0})
@@ -257,6 +258,11 @@ function! s:prepare_args(parsed, range_given)
     if len(options) == 1
         let options = repeat(options, len(compilers))
     endif
+    let compiler_options = substitute(get(a:parsed, 'compiler-options', ''), '\\,', '\n', 'g')
+    let compiler_options = split(compiler_options, '\\:', 1)
+    if len(compiler_options) == 1
+        let compiler_options = repeat(compiler_options, len(compilers))
+    endif
     if a:parsed['runtime-options']
         " XXX Replace white spaces except for spaces in quoted strings
         let runtime_options = input('Input runtime program options: ')
@@ -280,7 +286,7 @@ function! s:prepare_args(parsed, range_given)
     else
         let stdin = ''
     endif
-    return [code, compilers, options, runtime_options, stdin]
+    return [code, compilers, options, compiler_options, runtime_options, stdin]
 endfunction
 "}}}
 
@@ -391,8 +397,8 @@ endfunction
 function! wandbox#run(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options, runtime_options, stdin] = s:prepare_args(parsed, a:range_given)
-    let results = map(s:List.zip(compilers, options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1], runtime_options, stdin)]')
+    let [code, compilers, options, compiler_options, runtime_options, stdin] = s:prepare_args(parsed, a:range_given)
+    let results = map(s:List.zip(compilers, options, compiler_options), '[v:val[0], wandbox#compile(code, v:val[0], v:val[1], v:val[2], runtime_options, stdin)]')
     if g:wandbox#disable_quickfix
         for [compiler, json_result] in results
             call s:dump_result(compiler, s:format_process_result(json_result))
@@ -402,10 +408,12 @@ function! wandbox#run(range_given, ...)
     endif
 endfunction
 
-function! wandbox#compile(code, compiler, options, runtime_options, stdin)
+function! wandbox#compile(code, compiler, options, compiler_options, runtime_options, stdin)
     let data = {'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}
-    if has_key(g:wandbox#default_extra_options, a:compiler)
-        let data['compiler-option-raw'] = g:wandbox#default_extra_options[a:compiler]
+    if a:compiler_options != ''
+        let data['compiler-option-raw'] = a:compiler_options
+    elseif has_key(g:wandbox#default_extra_options, a:compiler)
+        let data['compiler-option-raw'] = substitute(g:wandbox#default_extra_options[a:compiler], '\s\+', "\n", 'g')
     endif
     if a:runtime_options != ''
         let data['runtime-option-raw'] = a:runtime_options
@@ -430,10 +438,10 @@ endfunction
 function! wandbox#run_async(range_given, ...)
     let parsed = s:parse_args(a:000)
     if parsed == {} | return | endif
-    let [code, compilers, options, runtime_options, stdin] = s:prepare_args(parsed, a:range_given)
+    let [code, compilers, options, compiler_options, runtime_options, stdin] = s:prepare_args(parsed, a:range_given)
     call add(s:async_works, {})
-    for [compiler, option] in s:List.zip(compilers, options)
-        call wandbox#compile_async(code, compiler, option, runtime_options, stdin, s:async_works[-1])
+    for [compiler, option, compiler_option] in s:List.zip(compilers, options, compiler_options)
+        call wandbox#compile_async(code, compiler, option, compiler_option, runtime_options, stdin, s:async_works[-1])
     endfor
     call s:start_polling()
 endfunction
@@ -453,9 +461,11 @@ function! wandbox#_dump_compile_results_for_autocmd_workaround()
     unlet s:async_compile_info
 endfunction
 
-function! wandbox#compile_async(code, compiler, options, runtime_options, stdin, work)
+function! wandbox#compile_async(code, compiler, options, compiler_options, runtime_options, stdin, work)
     let data = {'code' : a:code, 'options' : a:options, 'compiler' : a:compiler}
-    if has_key(g:wandbox#default_extra_options, a:compiler)
+    if a:compiler_options != ''
+        let data['compiler-option-raw'] = a:compiler_options
+    elseif has_key(g:wandbox#default_extra_options, a:compiler)
         let data['compiler-option-raw'] = substitute(g:wandbox#default_extra_options[a:compiler], '\s\+', "\n", 'g')
     endif
     if a:runtime_options != ''
