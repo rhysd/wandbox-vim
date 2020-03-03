@@ -638,7 +638,7 @@ function! s:clients.wget.on_complete(files)
 endfunction
 
 function! s:_quote()
-  return &shellxquote == '"' ?  "'" : '"'
+  return &shell =~# 'sh$' ? "'" : '"'
 endfunction
 
 let &cpo = s:save_cpo
